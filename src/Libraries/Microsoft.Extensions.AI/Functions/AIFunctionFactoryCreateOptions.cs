@@ -16,7 +16,6 @@ namespace Microsoft.Extensions.AI;
 public sealed class AIFunctionFactoryCreateOptions
 {
     private JsonSerializerOptions _options = AIJsonUtilities.DefaultOptions;
-    private IFormatProvider _formatProvider = AIJsonUtilities.DefaultFormatProvider;
     private AIJsonSchemaCreateOptions _schemaCreateOptions = AIJsonSchemaCreateOptions.Default;
 
     /// <summary>
@@ -31,13 +30,6 @@ public sealed class AIFunctionFactoryCreateOptions
     {
         get => _options;
         set => _options = Throw.IfNull(value);
-    }
-
-    /// <summary>Gets or sets the <see cref="IFormatProvider"/> used to parse JSON strings into primitive types.</summary>
-    public IFormatProvider FormatProvider
-    {
-        get => _formatProvider;
-        set => _formatProvider = Throw.IfNull(value);
     }
 
     /// <summary>

@@ -24,22 +24,6 @@ public static partial class AIFunctionFactory
     /// <summary>Holds the default options instance used when creating function.</summary>
     private static readonly AIFunctionFactoryCreateOptions _defaultOptions = new();
 
-    private static readonly Dictionary<Type, Func<string, IFormatProvider?, object>> _jsonStringParsers = new(12)
-    {
-        { typeof(bool), (s, _) => bool.Parse(s) },
-        { typeof(int), (s, format) => int.Parse(s, format) },
-        { typeof(uint), (s, format) => uint.Parse(s, format) },
-        { typeof(long), (s, format) => long.Parse(s, format) },
-        { typeof(ulong), (s, format) => ulong.Parse(s, format) },
-        { typeof(float), (s, format) => float.Parse(s, format) },
-        { typeof(double), (s, format) => double.Parse(s, format) },
-        { typeof(decimal), (s, format) => decimal.Parse(s, format) },
-        { typeof(short), (s, format) => short.Parse(s, format) },
-        { typeof(ushort), (s, format) => ushort.Parse(s, format ) },
-        { typeof(byte), (s, format) => byte.Parse(s, format) },
-        { typeof(sbyte), (s, format) => sbyte.Parse(s, format) }
-    };
-
     /// <summary>Creates an <see cref="AIFunction"/> instance for a method, specified via a delegate.</summary>
     /// <param name="method">The method to be represented via the created <see cref="AIFunction"/>.</param>
     /// <param name="options">Metadata to use to override defaults inferred from <paramref name="method"/>.</param>
@@ -394,7 +378,7 @@ public static partial class AIFunctionFactory
                     {
                         null => null, // Return as-is if null -- if the parameter is a struct this will be handled by MethodInfo.Invoke
                         _ when parameterType.IsInstanceOfType(value) => value, // Do nothing if value is assignable to parameter type
-                        JsonElement element => DeserializeJsonElement(element),
+                        JsonElement element => JsonSerializer.Deserialize(element, typeInfo),
                         JsonDocument doc => JsonSerializer.Deserialize(doc, typeInfo),
                         JsonNode node => JsonSerializer.Deserialize(node, typeInfo),
                         _ => MarshallViaJsonRoundtrip(value),
@@ -414,18 +398,6 @@ public static partial class AIFunctionFactory
                             return value;
                         }
 #pragma warning restore CA1031 // Do not catch general exception types
-                    }
-
-                    object? DeserializeJsonElement(JsonElement element)
-                    {
-                        if (parameterType != typeof(string)
-                        && element.ValueKind == JsonValueKind.String
-                        && _jsonStringParsers.TryGetValue(parameterType, out var jsonStringParser))
-                        {
-                            return jsonStringParser(element.GetString()!, options.FormatProvider);
-                        }
-
-                        return JsonSerializer.Deserialize(element, typeInfo);
                     }
                 }
 

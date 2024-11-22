@@ -12,7 +12,9 @@ namespace Microsoft.Extensions.AI;
 
 [JsonSourceGenerationOptions(
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    NumberHandling = JsonNumberHandling.AllowReadingFromString,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    Converters = new[] { typeof(JsonStringBooleanConverter) },
     UseStringEnumConverter = true)]
 [JsonSerializable(typeof(ChatCompletion))]
 [JsonSerializable(typeof(StreamingChatCompletionUpdate))]

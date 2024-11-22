@@ -34,7 +34,7 @@ public static partial class AIJsonUtilities
             JsonSerializerOptions options = new(JsonSerializerDefaults.Web)
             {
                 TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
-                Converters = { new JsonStringEnumConverter() },
+                Converters = { new JsonStringEnumConverter(), new JsonStringBooleanConverter() },
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                 WriteIndented = true,
             };
