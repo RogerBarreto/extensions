@@ -121,18 +121,23 @@ public class FunctionCallContentTests
         Dictionary<string, object?> arguments = JsonSerializer.Deserialize<Dictionary<string, object?>>("""
             {
               "a": ["Monday", "Tuesday", "Wednesday"],
-              "b": 123.4,
+              "b1": 123.4,
+              "b2": "123.4",
               "c": "072c2d93-7cf6-4d0d-aebc-acc51e6ee7ee",
               "d": {
                        "property1": "42",
                        "property2": "43",
                        "property3": "44"
-                   }
+                   },
+              "e1": true,
+              "e2": "false"
             }
             """, TestJsonSerializerContext.Default.Options)!;
         Assert.All(arguments.Values, v => Assert.IsType<JsonElement>(v));
 
-        AIFunction function = AIFunctionFactory.Create((DayOfWeek[] a, double b, Guid c, Dictionary<string, string> d) => b, serializerOptions: TestJsonSerializerContext.Default.Options);
+        AIFunction function = AIFunctionFactory.Create(
+            (DayOfWeek[] a, double b1, float b2, Guid c, Dictionary<string, string> d, bool e1, bool e2) => b1,
+            serializerOptions: TestJsonSerializerContext.Default.Options);
         var result = await function.InvokeAsync(arguments);
         AssertExtensions.EqualFunctionCallResults(123.4, result);
     }

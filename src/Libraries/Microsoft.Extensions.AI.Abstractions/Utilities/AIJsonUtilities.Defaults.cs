@@ -16,6 +16,9 @@ public static partial class AIJsonUtilities
     /// <summary>Gets the <see cref="JsonSerializerOptions"/> singleton used as the default in JSON serialization operations.</summary>
     public static JsonSerializerOptions DefaultOptions { get; } = CreateDefaultOptions();
 
+    /// <summary>Gets the default <see cref="IFormatProvider"/> to use when parsing JSON strings into primitive types.</summary>
+    public static IFormatProvider DefaultFormatProvider { get; } = System.Globalization.CultureInfo.InvariantCulture;
+
     /// <summary>Creates the default <see cref="JsonSerializerOptions"/> to use for serialization-related operations.</summary>
     [UnconditionalSuppressMessage("AotAnalysis", "IL3050", Justification = "DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled")]
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled")]

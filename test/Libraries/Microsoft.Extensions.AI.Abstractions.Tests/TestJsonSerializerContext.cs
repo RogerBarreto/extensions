@@ -28,4 +28,6 @@ namespace Microsoft.Extensions.AI;
 [JsonSerializable(typeof(DayOfWeek[]))] // Used in Content tests
 [JsonSerializable(typeof(Guid))] // Used in Content tests
 [JsonSerializable(typeof(decimal))] // Used in Content tests
+[JsonSerializable(typeof(bool))] // Used in Content tests
+[JsonSerializable(typeof(float))] // Used in Content tests
 internal sealed partial class TestJsonSerializerContext : JsonSerializerContext;
