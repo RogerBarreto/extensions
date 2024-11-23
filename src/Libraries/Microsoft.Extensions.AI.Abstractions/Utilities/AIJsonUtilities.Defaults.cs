@@ -8,6 +8,9 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+#if NET
+using System.Buffers;
+#endif
 
 namespace Microsoft.Extensions.AI;
 
@@ -83,4 +86,60 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(Embedding<double>))]
     [JsonSerializable(typeof(AIContent))]
     private sealed partial class JsonContext : JsonSerializerContext;
+
+    private sealed class JsonStringBooleanConverter : JsonConverter<bool>
+    {
+        public override bool Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            bool? boolResult = null;
+
+            if (reader.TokenType == JsonTokenType.String)
+            {
+#if NET
+                static int GetValueLength(ref Utf8JsonReader reader)
+                    => reader.HasValueSequence
+                        ? checked((int)reader.ValueSequence.Length)
+                        : reader.ValueSpan.Length;
+
+                const int StackallocByteThreshold = 256;
+                const int StackallocCharThreshold = StackallocByteThreshold / 2;
+
+                int bufferLength = GetValueLength(ref reader);
+                char[]? rentedBuffer = null;
+                if (bufferLength <= StackallocCharThreshold)
+                {
+                    rentedBuffer = ArrayPool<char>.Shared.Rent(bufferLength);
+                }
+
+                Span<char> charBuffer = rentedBuffer ?? stackalloc char[StackallocCharThreshold];
+
+                int actualLength = reader.CopyString(charBuffer);
+                ReadOnlySpan<char> stringSpan = charBuffer.Slice(0, actualLength);
+
+                if (bool.TryParse(stringSpan, out var result))
+                {
+                    boolResult = result;
+                }
+
+                if (rentedBuffer != null)
+                {
+                    charBuffer.Clear();
+                    ArrayPool<char>.Shared.Return(rentedBuffer);
+                }
+#else
+                if (bool.TryParse(reader.GetString(), out var result))
+                {
+                    boolResult = result;
+                }
+#endif
+            }
+
+            return boolResult ?? reader.GetBoolean();
+        }
+
+        public override void Write(Utf8JsonWriter writer, bool value, JsonSerializerOptions options)
+        {
+            writer.WriteBooleanValue(value);
+        }
+    }
 }
