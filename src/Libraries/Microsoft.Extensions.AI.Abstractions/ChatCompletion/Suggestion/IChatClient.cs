@@ -141,6 +141,13 @@ public class AudioTranscriptionContent : TextContent
     public TimeSpan Duration { get; set; }
 }
 
+public class AssemblyAIStreamingTranscriptionContentUpdate
+{
+    public string? Transcript { get; set; }
+
+    public TimeSpan TimeStamp { get; set; }
+}
+
 public class AudioClientMetadata : ModelClientMetadata;
 
 public sealed class AudioClient :

@@ -163,16 +163,43 @@ var stopReason = completion.Message.AdditionalProperties["stop_reason"];
 
 Clearly not the most efficient way to handle audio-to-text, but it's a good demonstration of how the protocol can be used to handle multi modalities, we will explore other simpler options ahead. 
 
-
-
 ## `<Modality>-to-<Modality>` - Abstraction Approaches
 
-Is important to keep in mind that the internal implementation of any of this abstractions can be 
+Is important to keep in mind that the internal implementation of any of this abstractions can be similar to a IChatClient implementation but not necessarily needs to be based in `ChatMessage` or `ChatHistory`, for this reason, was necessary to abstract also the concept of `ChatCompletion` in a generic way, allowing the internal implementation to be more flexible and not necessarily tied to a chat completion result.
+
+### Generic Completion`<TOutput>`
+
+The `Completion<TOutput>` abstraction will handle scenarios specific for modality-to-modality transformations without bringing the overhead of handling messages. 
+
+> [!NOTE] 
+> If we identify that there's a need to handle the messages and have access to messaging, we can consider simple `ChatCompletion<TOutput>` or a base `ModelCompletion` abstraction similar to `IModelClient`, not including specifics of a chat completion metadata.
+
+```csharp
+// Output type here is not necessarily tied to an AIContent, as we can think on having `Completion<AIContent>` for messages.
+public class Completion<TOutput> 
+    where TOutput : AIContent
+{
+    [JsonConstructor]
+    public Completion(IReadOnlyList<TOutput> outputs)
+    {
+        Outputs = Throw.IfNull(outputs);
+    }
+
+    // Multiple outputs for the desired format
+    public IReadOnlyList<TOutput> Outputs { get; }
+
+    [JsonIgnore]
+    public object? RawRepresentation { get; set; }
+
+    public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
+}
+```
+
 When implementing those generic interfaces is important to keep in mind that the internal implementation will be relying in the protocol way described above, where the abstractions will work mostly to simplify the end-user experience with the API's.
 
 ### Generic `<TInput, TOutput>`
 
-Since there can be an infinite potential of modality permutations, would be very risky and unpractical narrowing down non generic abstractions only for main use cases of modality combinations. 
+Since there can be an infinite potential of modality permutations, would be very risky and unpractical narrowing down non generic abstractions only for main use cases of modality combinations.
 
 The generic approach embraces this infinite potential quite easily allowing providers to __specify a generic `Input-to-Output` permutation__.
 
@@ -224,11 +251,11 @@ Some services even provide one or another, i.e: OpenAI's transcription only prov
 **Non-Streaming**
 
 ```csharp
-public interface IChatClient<TInput, TOutput> : IDisposable,     
+public interface IModelClient<TInput, TOutput> : IModelClient
     where TInput : AIContent
-    where TOutput : AIContent;
+    where TOutput : AIContent
 {
-    Task<ChatCompletion<TOutput>> CompleteAsync(
+    Task<Completion<TOutput>> CompleteAsync(
         TInput input,
         AIOptions<TInput, TOutput>? options = null,
         CancellationToken cancellationToken = default);
@@ -240,10 +267,9 @@ public interface IChatClient<TInput, TOutput> : IDisposable,
 Streaming APIs for different contents may return dedicated StreamingContentUpdate types, as well as having a different category of options.
 
 ```csharp
-public interface IStreamingChatClient<TInput, TOutput> : IDisposable
+public interface IStreamingModelClient<TInput, TOutput> : IModelClient
     where TInput : AIContent
-    where TOutput : AIContent;
-
+    where TOutput : AIContent
 {
     IAsyncEnumerable<TOutput> CompleteStreamingAsync(
         TInput input,
@@ -256,15 +282,20 @@ public interface IStreamingChatClient<TInput, TOutput> : IDisposable
 
 Options can be segregated in a similar way to the IChatClient, where the options are specific to the input and output types.
 
-Options differently from the IChatClient, can be more generic and not require a segregation between streaming and non-streaming and can be used for both API's.
+Options differently from the `IModelClient`, can be more generic and not require a segregation between streaming and non-streaming and can be used for both API's.
 
 ```csharp
-public abstract class AIOptions<TInput, TOutput>
+public abstract class AIOptions 
+{
+    public string ResponseFormat { get; set; }
+}
+
+public abstract class AIOptions<TInput, TOutput> : AIOptions
     where TInput : AIContent
     where TOutput : AIContent;
 ```
 
-### Options and IChatClient Implementations for OpenAI
+### Options and IModelClient Implementations for OpenAI
 
 ```csharp
 public class OpenAIAudioOptions : AIOptions<AudioContent, SpecializedTranscriptionContent>
@@ -275,7 +306,9 @@ public class OpenAIAudioOptions : AIOptions<AudioContent, SpecializedTranscripti
 
 public class OpenAIAudioChatClient : 
     IChatClient<AudioContent, SpecializedTranscriptionContent>, 
-    // IStreamingChatClient<AudioContent, StreamingAudioContentUpdate> There's no support for streaming in OpenAI
+
+    // OpenAI doesn't support streaming in Audio transcription and the client won't need to implement the streaming interface
+    // IStreamingChatClient<AudioContent, StreamingAudioContentUpdate> 
 {
     public Task<ChatCompletion<SpecializedTranscriptionContent>> CompleteAsync(
         AudioContent input,
@@ -286,7 +319,30 @@ public class OpenAIAudioChatClient :
     }
 }
 ```
+
+Usage:
+
+```csharp	
+using var client = new AudioClient();
+var input = new AudioContent(new Uri("https://example"));
+var options = new AudioOptions { Language = "pt" };
+
+var completion = await client.CompleteAsync(input, options, CancellationToken.None);
+
+// Get the specialized content straight from the completion
+var specializedContent = completion.Outputs.First();
+
+// Get the transcript text
+var transcriptText = specializedContent.Transcript; // Specific property
+// Or 
+var transcriptText = specializedContent.Text; // Gets from the TextContent inheritance
+```
+
 ### Options Implementation
+
+One interesting thing to observe is that each API (streaming vs non-streaming may also require different configurations), having the specific options for each API (thru generic Output spec) can be beneficial for discerning what are the correct Option settings supported for each API.
+
+This also comes in line with the latest OpenAI API's that are starting to provide more specific options for streaming ([streaming options](https://platform.openai.com/docs/api-reference/chat/create#chat-create-stream_options)) that aren't required when the flag is false and may be only available in the streaming API option definition.
 
 **Non-Streaming**
 
@@ -306,10 +362,24 @@ Options:
 public class AssemblyAIStreamingOptions : AIOptions<AudioContent, AssemblyAIStreamingTranscriptionContentUpdate>
 {
     public TranscriptLanguageCode LanguageCode { get; set; }
+    public bool IncludeUsage { get; set; }
 }
 ```
 
-Audio Client:
+Content:
+
+Specialized content for streaming updates
+
+```csharp
+public class AssemblyAIStreamingTranscriptionContentUpdate
+{
+    public string? Transcript { get; set; }
+
+    public TimeSpan TimeStamp { get; set; }
+}
+```
+
+Assembly AI Audio Client (Supports Streaming only)
 ```csharp
 public class AssemblyAIAudioClient : IStreamingChatClient<AudioContent, AssemblyAIStreamingTranscriptionContentUpdate>
 {
@@ -329,6 +399,7 @@ Usage:
 var client = new AssemblyAIAudioClient();
 var audioContent = new AudioContent(audioBytes, "audio/wav");
 var options = new AssemblyAIStreamingOptions { LanguageCode = TranscriptLanguageCode.EnglishUS };
+
 await foreach (var audioChunk in client.CompleteStreamingAsync(audioContent, options, cancellationToken)) 
 {
     switch (audioChunk.Event)
@@ -346,8 +417,7 @@ await foreach (var audioChunk in client.CompleteStreamingAsync(audioContent, opt
 }
 ```
 
-
-**Dependency Injection Consideration**
+**Dependency Injection Consideration** (WIP)
 
 As rule of thumb to improve the discoverability of the generic services, would be recommended to register the services using the M.E.AI.Abstraction contents (Image, Text, Audio, Binary).
 
@@ -356,79 +426,3 @@ services.AddScoped<IChatClient<AudioContent, SpecializedTranscriptionContent>, A
 // Instead register the generic ones
 services.AddScoped<IChatClient<AudioContent, TextContent>, AudioChatClient>(); // Preferred
 ```
-
-
-// Option 1:  Getting the specialized content from the protocol message (As a new content in the message)
-var specializedTranscript = completion.Message.Contents.OfType<SpecializedTranscriptionContent>().First();
-
-// Option 2: Getting the specialized content from the TextContent itself (SpecializedTranscriptionContent inherits from TextContent)
-var specializedTranscript = completion.Message.RawRepresentation as SpecializedTranscriptionContent;
-
-// This might be a problem if you want to get more metadata from the transcription (potentially available in AdditionalProperties)
-var transcript = completion.Message.Text;
-
-// Generic way for IChatCLient
-
-// Option 1 (Input generics only)
-public interface IChatClient<TInput> : IDisposable, where TInput : AIContent
-{
-    Task<ChatCompletion> CompleteAsync(
-        TInput input,
-        ChatOptions? options = null,
-        CancellationToken cancellationToken = default);
-
-    IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
-        TInput input,
-        ChatOptions? options = null,
-        CancellationToken cancellationToken = default);
-}
-
-// Libraries implementation
-public AudioChatClient : IChatClient<AudioContent>
-
-// Generic Protocol usage, transcript comes back as TextContent in a message
-var client = new AudioChatClient()
-var completion = await client.CompleteAsync(audioContent, options, cancellationToken)
-// This might be a problem if you want to get more metadata from the transcription (potentially available in AdditionalProperties)
-var transcript = completion.Message.Text;
-
-
-// To solve the problem above we can introduce a generic type for the output
-public interface IChatClient<TInput, TOutput> : IDisposable, where TInput : AIContent, TOutput : AIContent
-{
-    Task<ChatCompletion<TOutput>> CompleteAsync(
-        TInput input,
-        ChatOptions? options = null,
-        CancellationToken cancellationToken = default);
-
-    IAsyncEnumerable<TOutput> CompleteStreamingAsync(
-        TInput input,
-        ChatOptions? options = null,
-        CancellationToken cancellationToken = default);
-}
-
-public ChatCompletion<TOutput> : ChatCompletion where TOutput : AIContent
-{
-    // Can return multiple (for multiple choices), this will be an additional property returning the expected type
-    private IEnumerable<TOutput> Contents {
-        get 
-        {
-            foreach (var message in Choices)
-            {
-                foreach (var content in message.Contents.OfType<TOutput>())
-                {
-                    yield return content;
-                }
-            }
-        }
-    }
-}
-
-// Now customers can use the specialization from libraries
-class MyAudioChatClient : IChatClient<AudioContent, SpecializedTranscriptionContent>
-
-// usage, transcript comes back as TextContent in a message
-var client = new AudioChatClient()
-var completion = await client.CompleteAsync(audioContent, options, cancellationToken)
-// This might be a problem if you want to get more metadata from the transcription (potentially available in AdditionalProperties)
-var myTranscript = completion.Contents.First();
