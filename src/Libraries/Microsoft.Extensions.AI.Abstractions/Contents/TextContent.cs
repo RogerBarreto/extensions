@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Represents text content in a chat.
 /// </summary>
-public sealed class TextContent : AIContent
+public class TextContent : AIContent
 {
     private string? _text;
 
