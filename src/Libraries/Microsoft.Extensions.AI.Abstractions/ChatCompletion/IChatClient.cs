@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,7 +22,7 @@ namespace Microsoft.Extensions.AI;
 /// argument, and that should be avoided if using a singleton options instance.
 /// </para>
 /// </remarks>
-public interface IChatClient : IDisposable
+public interface IChatClient : IModelClient
 {
     /// <summary>Sends chat messages to the model and returns the response messages.</summary>
     /// <param name="chatMessages">The chat content to send.</param>
@@ -52,17 +51,4 @@ public interface IChatClient : IDisposable
         IList<ChatMessage> chatMessages,
         ChatOptions? options = null,
         CancellationToken cancellationToken = default);
-
-    /// <summary>Gets metadata that describes the <see cref="IChatClient"/>.</summary>
-    ChatClientMetadata Metadata { get; }
-
-    /// <summary>Asks the <see cref="IChatClient"/> for an object of the specified type <paramref name="serviceType"/>.</summary>
-    /// <param name="serviceType">The type of object being requested.</param>
-    /// <param name="serviceKey">An optional key that can be used to help identify the target service.</param>
-    /// <returns>The found object, otherwise <see langword="null"/>.</returns>
-    /// <remarks>
-    /// The purpose of this method is to allow for the retrieval of strongly typed services that might be provided by the <see cref="IChatClient"/>,
-    /// including itself or any services it might be wrapping.
-    /// </remarks>
-    object? GetService(Type serviceType, object? serviceKey = null);
 }
