@@ -11,13 +11,15 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Describes the intended purpose of a message within a chat completion interaction.
+/// Describes the intended purpose of a specific update during streaming of audio transcriptions.
 /// </summary>
 [JsonConverter(typeof(Converter))]
 public readonly struct AudioTranscriptionUpdateKind : IEquatable<AudioTranscriptionUpdateKind>
 {
+    /// <summary>Gets when the transcription session is opened.</summary>
     public static AudioTranscriptionUpdateKind SessionOpen { get; } = new("sessionopen");
 
+    /// <summary>Gets when a non-blocking error occurs during transcription.</summary>
     public static AudioTranscriptionUpdateKind Error { get; } = new("error");
 
     /// <summary>Gets when the transcription is in progress, without waiting for silence.</summary>
@@ -26,13 +28,14 @@ public readonly struct AudioTranscriptionUpdateKind : IEquatable<AudioTranscript
     /// <summary>Gets when the transcription is complete after small period of silence.</summary>
     public static AudioTranscriptionUpdateKind Transcribed { get; } = new("transcribed");
 
+    /// <summary>Gets when the transcription session is closed.</summary>
     public static AudioTranscriptionUpdateKind SessionClose { get; } = new("sessionclose");
 
     /// <summary>
     /// Gets the value associated with this <see cref="AudioTranscriptionUpdateKind"/>.
     /// </summary>
     /// <remarks>
-    /// The value will be serialized into the "role" message field of the Chat Message format.
+    /// The value will be serialized into the "kind" message field of the Audio Transcription Update format.
     /// </remarks>
     public string Value { get; }
 
