@@ -1,5 +1,7 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System.Text.Json;
-using Microsoft.Extensions.AI.Abstractions;
 using Xunit;
 
 namespace Microsoft.Extensions.AI.Abstractions.Tests
@@ -10,22 +12,32 @@ namespace Microsoft.Extensions.AI.Abstractions.Tests
         public void Constructor_ShouldInitializeProperties()
         {
             // Arrange
-            var errorCode = "ErrorCode";
-            var errorMessage = "ErrorMessage";
+            string errorMessage = "Error occurred";
+            string errorCode = "ERR001";
+            string errorDetails = "Something went wrong";
 
             // Act
-            var errorContent = new ErrorContent(errorCode, errorMessage);
+            var errorContent = new ErrorContent(errorMessage)
+            {
+                Code = errorCode,
+                Details = errorDetails
+            };
 
             // Assert
-            Assert.Equal(errorCode, errorContent.ErrorCode);
-            Assert.Equal(errorMessage, errorContent.ErrorMessage);
+            Assert.Equal(errorMessage, errorContent.Message);
+            Assert.Equal(errorCode, errorContent.Code);
+            Assert.Equal(errorDetails, errorContent.Details);
         }
 
         [Fact]
         public void JsonSerialization_ShouldSerializeAndDeserializeCorrectly()
         {
             // Arrange
-            var errorContent = new ErrorContent("ErrorCode", "ErrorMessage");
+            var errorContent = new ErrorContent("Error occurred")
+            {
+                Code = "ERR001",
+                Details = "Something went wrong"
+            };
             var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
             // Act
@@ -34,8 +46,9 @@ namespace Microsoft.Extensions.AI.Abstractions.Tests
 
             // Assert
             Assert.NotNull(deserializedErrorContent);
-            Assert.Equal(errorContent.ErrorCode, deserializedErrorContent.ErrorCode);
-            Assert.Equal(errorContent.ErrorMessage, deserializedErrorContent.ErrorMessage);
+            Assert.Equal(errorContent.Message, deserializedErrorContent!.Message);
+            Assert.Equal(errorContent.Code, deserializedErrorContent.Code);
+            Assert.Equal(errorContent.Details, deserializedErrorContent.Details);
         }
     }
 }

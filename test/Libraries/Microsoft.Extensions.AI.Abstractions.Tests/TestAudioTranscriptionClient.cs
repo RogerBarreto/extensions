@@ -8,38 +8,73 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.AI;
 
-public class TestAudioTranscriptionClient : IAudioTranscriptionClient, IDisposable
+public sealed class TestAudioTranscriptionClient : IAudioTranscriptionClient
 {
-    public Func<IEnumerable<AudioTranscriptionChoice>, AudioTranscriptionOptions, CancellationToken, Task<AudioTranscriptionCompletion>>? TranscribeAsyncCallback { get; set; }
-    public Func<IEnumerable<AudioTranscriptionChoice>, AudioTranscriptionOptions, CancellationToken, IAsyncEnumerable<StreamingAudioTranscriptionUpdate>>? TranscribeStreamingAsyncCallback { get; set; }
+    // Mimic the TestChatClient pattern by exposing a Services property.
+    public IServiceProvider? Services { get; set; }
 
-    public Task<AudioTranscriptionCompletion> TranscribeAsync(IEnumerable<AudioTranscriptionChoice> audioTranscriptions, AudioTranscriptionOptions options, CancellationToken cancellationToken = default)
+    // The metadata property is implemented with a getter and setter.
+    public AudioTranscriptionClientMetadata Metadata { get; set; } =
+        new AudioTranscriptionClientMetadata("TestAudioTranscriptionClient", new Uri("http://localhost"), "test-model");
+
+    // Callbacks for asynchronous operations.
+    public Func<IReadOnlyList<
+        IAsyncEnumerable<DataContent>>,
+        AudioTranscriptionOptions,
+        CancellationToken,
+        Task<AudioTranscriptionCompletion>>?
+        TranscribeAsyncCallback
+    { get; set; }
+
+    public Func<IReadOnlyList<IAsyncEnumerable<DataContent>>,
+        AudioTranscriptionOptions,
+        CancellationToken,
+        IAsyncEnumerable<StreamingAudioTranscriptionUpdate>>?
+        TranscribeStreamingAsyncCallback
+    { get; set; }
+
+    // A GetService callback similar to the one used in TestChatClient.
+    public Func<Type, object?, object?> GetServiceCallback { get; set; }
+
+    public TestAudioTranscriptionClient()
     {
-        if (TranscribeAsyncCallback is null)
+        GetServiceCallback = DefaultGetServiceCallback;
+    }
+
+    private object? DefaultGetServiceCallback(Type serviceType, object? serviceKey)
+    {
+        // If no key is provided and the requested type is assignable from this instance, return this.
+        if (serviceKey is null && serviceType.IsInstanceOfType(this))
         {
-            throw new NotImplementedException();
+            return this;
         }
 
-        return TranscribeAsyncCallback(audioTranscriptions, options, cancellationToken);
-    }
-
-    public IAsyncEnumerable<StreamingAudioTranscriptionUpdate> TranscribeStreamingAsync(IEnumerable<AudioTranscriptionChoice> audioTranscriptions, AudioTranscriptionOptions options, CancellationToken cancellationToken = default)
-    {
-        if (TranscribeStreamingAsyncCallback is null)
+        // If the caller is requesting AudioTranscriptionClientMetadata, return our Metadata.
+        if (serviceType == typeof(AudioTranscriptionClientMetadata))
         {
-            throw new NotImplementedException();
+            return Metadata;
         }
 
-        return TranscribeStreamingAsyncCallback(audioTranscriptions, options, cancellationToken);
+        return null;
     }
 
-    public TService GetService<TService>()
-    {
-        throw new NotImplementedException();
-    }
+    public Task<AudioTranscriptionCompletion> TranscribeAsync(
+        IReadOnlyList<IAsyncEnumerable<DataContent>> audioContents,
+        AudioTranscriptionOptions? options = null,
+        CancellationToken cancellationToken = default)
+        => TranscribeAsyncCallback!(audioContents, options ?? new AudioTranscriptionOptions(), cancellationToken);
+
+    public IAsyncEnumerable<StreamingAudioTranscriptionUpdate> TranscribeStreamingAsync(
+        IReadOnlyList<IAsyncEnumerable<DataContent>> audioContents,
+        AudioTranscriptionOptions? options = null,
+        CancellationToken cancellationToken = default)
+        => TranscribeStreamingAsyncCallback!(audioContents, options ?? new AudioTranscriptionOptions(), cancellationToken);
+
+    public object? GetService(Type serviceType, object? serviceKey = null)
+        => GetServiceCallback(serviceType, serviceKey);
 
     public void Dispose()
     {
-        // Dispose resources if any
+        // Dispose of resources if any.
     }
 }

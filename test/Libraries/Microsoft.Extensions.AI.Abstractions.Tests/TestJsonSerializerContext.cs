@@ -14,6 +14,9 @@ namespace Microsoft.Extensions.AI;
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     UseStringEnumConverter = true)]
+[JsonSerializable(typeof(AudioTranscriptionCompletion))]
+[JsonSerializable(typeof(StreamingAudioTranscriptionUpdate))]
+[JsonSerializable(typeof(AudioTranscriptionOptions))]
 [JsonSerializable(typeof(ChatCompletion))]
 [JsonSerializable(typeof(StreamingChatCompletionUpdate))]
 [JsonSerializable(typeof(ChatOptions))]

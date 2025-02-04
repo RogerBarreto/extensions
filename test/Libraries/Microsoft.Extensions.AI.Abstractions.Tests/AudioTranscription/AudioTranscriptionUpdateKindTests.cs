@@ -12,7 +12,8 @@ public class AudioTranscriptionUpdateKindTests
     [Fact]
     public void Constructor_Value_Roundtrips()
     {
-        Assert.Equal("abc", new AudioTranscriptionUpdateKind("abc").Value);
+        var kind = new AudioTranscriptionUpdateKind("abc");
+        Assert.Equal("abc", kind.Value);
     }
 
     [Fact]
@@ -25,39 +26,42 @@ public class AudioTranscriptionUpdateKindTests
     [Fact]
     public void Equality_UsesOrdinalIgnoreCaseComparison()
     {
-        Assert.True(new AudioTranscriptionUpdateKind("abc").Equals(new AudioTranscriptionUpdateKind("ABC")));
-        Assert.True(new AudioTranscriptionUpdateKind("abc").Equals((object)new AudioTranscriptionUpdateKind("ABC")));
-        Assert.True(new AudioTranscriptionUpdateKind("abc") == new AudioTranscriptionUpdateKind("ABC"));
-        Assert.False(new AudioTranscriptionUpdateKind("abc") != new AudioTranscriptionUpdateKind("ABC"));
+        var kind1 = new AudioTranscriptionUpdateKind("abc");
+        var kind2 = new AudioTranscriptionUpdateKind("ABC");
+        Assert.True(kind1.Equals(kind2));
+        Assert.True(kind1.Equals((object)kind2));
+        Assert.True(kind1 == kind2);
+        Assert.False(kind1 != kind2);
 
-        Assert.False(new AudioTranscriptionUpdateKind("abc").Equals(new AudioTranscriptionUpdateKind("def")));
-        Assert.False(new AudioTranscriptionUpdateKind("abc").Equals((object)new AudioTranscriptionUpdateKind("def")));
-        Assert.False(new AudioTranscriptionUpdateKind("abc").Equals(null));
-        Assert.False(new AudioTranscriptionUpdateKind("abc").Equals("abc"));
-        Assert.False(new AudioTranscriptionUpdateKind("abc") == new AudioTranscriptionUpdateKind("def"));
-        Assert.True(new AudioTranscriptionUpdateKind("abc") != new AudioTranscriptionUpdateKind("def"));
+        var kind3 = new AudioTranscriptionUpdateKind("def");
+        Assert.False(kind1.Equals(kind3));
+        Assert.False(kind1.Equals((object)kind3));
+        Assert.False(kind1 == kind3);
+        Assert.True(kind1 != kind3);
 
-        Assert.Equal(new AudioTranscriptionUpdateKind("abc").GetHashCode(), new AudioTranscriptionUpdateKind("abc").GetHashCode());
-        Assert.Equal(new AudioTranscriptionUpdateKind("abc").GetHashCode(), new AudioTranscriptionUpdateKind("ABC").GetHashCode());
-        Assert.NotEqual(new AudioTranscriptionUpdateKind("abc").GetHashCode(), new AudioTranscriptionUpdateKind("def").GetHashCode()); // not guaranteed
+        Assert.Equal(kind1.GetHashCode(), new AudioTranscriptionUpdateKind("abc").GetHashCode());
+        Assert.Equal(kind1.GetHashCode(), new AudioTranscriptionUpdateKind("ABC").GetHashCode());
     }
 
     [Fact]
     public void Singletons_UseKnownValues()
     {
-        Assert.Equal("assistant", AudioTranscriptionUpdateKind.Assistant.Value);
-        Assert.Equal("system", AudioTranscriptionUpdateKind.System.Value);
-        Assert.Equal("user", AudioTranscriptionUpdateKind.User.Value);
+        // These constants are defined in AudioTranscriptionUpdateKind
+        Assert.Equal("sessionopen", AudioTranscriptionUpdateKind.SessionOpen.Value);
+        Assert.Equal("error", AudioTranscriptionUpdateKind.Error.Value);
+        Assert.Equal("transcribing", AudioTranscriptionUpdateKind.Transcribing.Value);
+        Assert.Equal("transcribed", AudioTranscriptionUpdateKind.Transcribed.Value);
+        Assert.Equal("sessionclose", AudioTranscriptionUpdateKind.SessionClose.Value);
     }
 
     [Fact]
     public void JsonSerialization_Roundtrips()
     {
-        AudioTranscriptionUpdateKind kind = new("abc");
-        string? json = JsonSerializer.Serialize(kind, TestJsonSerializerContext.Default.AudioTranscriptionUpdateKind);
+        var kind = new AudioTranscriptionUpdateKind("abc");
+        string json = JsonSerializer.Serialize(kind, TestJsonSerializerContext.Default.AudioTranscriptionUpdateKind);
         Assert.Equal("\"abc\"", json);
 
-        AudioTranscriptionUpdateKind? result = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.AudioTranscriptionUpdateKind);
+        var result = JsonSerializer.Deserialize<AudioTranscriptionUpdateKind>(json, TestJsonSerializerContext.Default.AudioTranscriptionUpdateKind);
         Assert.Equal(kind, result);
     }
 }

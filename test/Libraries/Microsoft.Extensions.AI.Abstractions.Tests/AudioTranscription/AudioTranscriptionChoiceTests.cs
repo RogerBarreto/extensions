@@ -61,10 +61,10 @@ public class AudioTranscriptionChoiceTests
     [InlineData(0)]
     [InlineData(1)]
     [InlineData(2)]
-    public void Constructor_List_PropsRoundtrip(int messageCount)
+    public void Constructor_List_PropsRoundtrip(int choiceCount)
     {
         List<AIContent> content = [];
-        for (int i = 0; i < messageCount; i++)
+        for (int i = 0; i < choiceCount; i++)
         {
             content.Add(new TextContent($"text-{i}"));
         }
@@ -72,22 +72,22 @@ public class AudioTranscriptionChoiceTests
         AudioTranscriptionChoice choice = new(content);
 
         Assert.Same(choice.Contents, choice.Contents);
-        if (messageCount == 0)
+        if (choiceCount == 0)
         {
             Assert.Empty(choice.Contents);
             Assert.Null(choice.Text);
         }
         else
         {
-            Assert.Equal(messageCount, choice.Contents.Count);
-            for (int i = 0; i < messageCount; i++)
+            Assert.Equal(choiceCount, choice.Contents.Count);
+            for (int i = 0; i < choiceCount; i++)
             {
                 TextContent tc = Assert.IsType<TextContent>(choice.Contents[i]);
                 Assert.Equal($"text-{i}", tc.Text);
             }
 
             Assert.Equal("text-0", choice.Text);
-            Assert.Equal(string.Concat(Enumerable.Range(0, messageCount).Select(i => $"text-{i}")), choice.ToString());
+            Assert.Equal(string.Concat(Enumerable.Range(0, choiceCount).Select(i => $"text-{i}")), choice.ToString());
         }
 
         Assert.Null(choice.RawRepresentation);
@@ -120,7 +120,7 @@ public class AudioTranscriptionChoiceTests
     }
 
     [Fact]
-    public void Text_Set_AddsTextMessageToEmptyList()
+    public void Text_Set_AddsTextToEmptyList()
     {
         AudioTranscriptionChoice choice = new([]);
         Assert.Empty(choice.Contents);
@@ -134,7 +134,7 @@ public class AudioTranscriptionChoiceTests
     }
 
     [Fact]
-    public void Text_Set_AddsTextMessageToListWithNoText()
+    public void Text_Set_AddsTextToListWithNoText()
     {
         AudioTranscriptionChoice choice = new(
         [
@@ -288,7 +288,7 @@ public class AudioTranscriptionChoiceTests
         var audioTranscriptionChoiceJson = JsonSerializer.Serialize(new AudioTranscriptionChoice(contents: items)
         {
             Text = "content-1-override", // Override the content of the first text content item that has the "content-1" content
-            AdditionalProperties = new() { ["message-metadata-key-1"] = "message-metadata-value-1" },
+            AdditionalProperties = new() { ["choice-metadata-key-1"] = "choice-metadata-value-1" },
             StartTime = TimeSpan.FromSeconds(10),
             EndTime = TimeSpan.FromSeconds(20)
         }, TestJsonSerializerContext.Default.Options);
@@ -298,7 +298,7 @@ public class AudioTranscriptionChoiceTests
         // Assert
         Assert.NotNull(deserializedChoice.AdditionalProperties);
         Assert.Single(deserializedChoice.AdditionalProperties);
-        Assert.Equal("message-metadata-value-1", deserializedChoice.AdditionalProperties["message-metadata-key-1"]?.ToString());
+        Assert.Equal("choice-metadata-value-1", deserializedChoice.AdditionalProperties["choice-metadata-key-1"]?.ToString());
         Assert.Equal(TimeSpan.FromSeconds(10), deserializedChoice.StartTime);
         Assert.Equal(TimeSpan.FromSeconds(20), deserializedChoice.EndTime);
 
