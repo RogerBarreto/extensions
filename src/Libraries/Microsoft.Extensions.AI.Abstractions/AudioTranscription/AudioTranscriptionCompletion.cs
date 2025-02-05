@@ -24,11 +24,11 @@ public class AudioTranscriptionCompletion
     }
 
     /// <summary>Initializes a new instance of the <see cref="AudioTranscriptionCompletion"/> class.</summary>
-    /// <param name="transcription">The transcription representing the singular choice in the completion.</param>
-    public AudioTranscriptionCompletion(AudioTranscriptionChoice transcription)
+    /// <param name="choice">The transcription representing the singular choice in the completion.</param>
+    public AudioTranscriptionCompletion(AudioTranscriptionChoice choice)
     {
-        _ = Throw.IfNull(transcription);
-        _choices = [transcription];
+        _ = Throw.IfNull(choice);
+        _choices = [choice];
     }
 
     /// <summary>Gets or sets the list of audio transcription choices.</summary>
@@ -38,13 +38,13 @@ public class AudioTranscriptionCompletion
         set => _choices = Throw.IfNull(value);
     }
 
-    /// <summary>Gets the transcription details.</summary>
+    /// <summary>Gets the first transcription choice details.</summary>
     /// <remarks>
     /// If there are multiple choices, this property returns the first choice.
     /// If <see cref="Choices"/> is empty, this property will throw. Use <see cref="Choices"/> to access all choices directly.
     /// </remarks>
     [JsonIgnore]
-    public AudioTranscriptionChoice Transcription
+    public AudioTranscriptionChoice Choice
     {
         get
         {
