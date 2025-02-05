@@ -40,7 +40,7 @@ public static class AudioTranscriptionClientExtensions
         AudioTranscriptionOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        IEnumerable<DataContent> audioContents = [audioContent];
+        IEnumerable<DataContent> audioContents = [Throw.IfNull(audioContent)];
         return Throw.IfNull(client)
             .TranscribeAsync(
                 [audioContents.ToAsyncEnumerableAsync()],
@@ -94,7 +94,7 @@ public static class AudioTranscriptionClientExtensions
         AudioTranscriptionOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        IEnumerable<DataContent> audioContents = [audioContent];
+        IEnumerable<DataContent> audioContents = [Throw.IfNull(audioContent)];
         return Throw.IfNull(client)
             .TranscribeStreamingAsync(
                 [audioContents.ToAsyncEnumerableAsync()],

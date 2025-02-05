@@ -25,8 +25,8 @@ public class AudioTranscriptionCompletionTests
         AudioTranscriptionChoice choice = new();
         AudioTranscriptionCompletion completion = new(choice);
 
-        // The Transcription property returns the first (and only) choice.
-        Assert.Same(choice, completion.Transcription);
+        // The choice property returns the first (and only) choice.
+        Assert.Same(choice, completion.Choice);
         Assert.Same(choice, Assert.Single(completion.Choices));
     }
 
@@ -50,7 +50,7 @@ public class AudioTranscriptionCompletionTests
     {
         AudioTranscriptionCompletion completion = new([]);
         Assert.Empty(completion.Choices);
-        Assert.Throws<InvalidOperationException>(() => completion.Transcription);
+        Assert.Throws<InvalidOperationException>(() => completion.Choice);
     }
 
     [Fact]
@@ -58,7 +58,7 @@ public class AudioTranscriptionCompletionTests
     {
         AudioTranscriptionChoice choice = new();
         AudioTranscriptionCompletion completion = new([choice]);
-        Assert.Same(choice, completion.Transcription);
+        Assert.Same(choice, completion.Choice);
         Assert.Same(choice, completion.Choices[0]);
     }
 
@@ -70,7 +70,7 @@ public class AudioTranscriptionCompletionTests
             first,
             new AudioTranscriptionChoice(),
         ]);
-        Assert.Same(first, completion.Transcription);
+        Assert.Same(first, completion.Choice);
         Assert.Same(first, completion.Choices[0]);
     }
 
@@ -127,7 +127,9 @@ public class AudioTranscriptionCompletionTests
         };
 
         string json = JsonSerializer.Serialize(original, TestJsonSerializerContext.Default.AudioTranscriptionCompletion);
+
         AudioTranscriptionCompletion? result = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.AudioTranscriptionCompletion);
+
         Assert.NotNull(result);
         Assert.Equal(4, result.Choices.Count);
 
@@ -138,6 +140,7 @@ public class AudioTranscriptionCompletionTests
 
         Assert.Equal("id", result.CompletionId);
         Assert.Equal("modelId", result.ModelId);
+
         Assert.NotNull(result.AdditionalProperties);
         Assert.Single(result.AdditionalProperties);
         Assert.True(result.AdditionalProperties.TryGetValue("key", out object? value));
@@ -211,7 +214,7 @@ public class AudioTranscriptionCompletionTests
         StreamingAudioTranscriptionUpdate update0 = nonNullUpdates[0];
         Assert.Equal("12345", update0.CompletionId);
         Assert.Equal("someModel", update0.ModelId);
-        Assert.Equal(AudioTranscriptionUpdateKind.Transcribing, update0.Kind);
+        Assert.Equal(AudioTranscriptionUpdateKind.Transcribed, update0.Kind);
         Assert.Equal(choice.Text, update0.Text);
         Assert.Equal(choice.InputIndex, update0.InputIndex);
         Assert.Equal(choice.StartTime, update0.StartTime);
@@ -268,8 +271,10 @@ public class AudioTranscriptionCompletionTests
         StreamingAudioTranscriptionUpdate update0 = nonNullUpdates[0];
         Assert.Equal("12345", update0.CompletionId);
         Assert.Equal("someModel", update0.ModelId);
-        Assert.Equal(AudioTranscriptionUpdateKind.Transcribing, update0.Kind);
-        Assert.Equal("Hello, world!", update0.Text);
+        Assert.Equal(AudioTranscriptionUpdateKind.Transcribed, update0.Kind);
+        Assert.Equal("Hello, ", Assert.IsType<TextContent>(update0.Contents[0]).Text);
+        Assert.Equal("image/png", Assert.IsType<DataContent>(update0.Contents[1]).MediaType);
+        Assert.Equal("world!", Assert.IsType<TextContent>(update0.Contents[2]).Text);
         Assert.Equal(choice1.InputIndex, update0.InputIndex);
         Assert.Equal("choice1Value", update0.AdditionalProperties?["choice1Key"]);
 
@@ -277,7 +282,7 @@ public class AudioTranscriptionCompletionTests
         StreamingAudioTranscriptionUpdate update1 = nonNullUpdates[1];
         Assert.Equal("12345", update1.CompletionId);
         Assert.Equal("someModel", update1.ModelId);
-        Assert.Equal(AudioTranscriptionUpdateKind.Transcribing, update1.Kind);
+        Assert.Equal(AudioTranscriptionUpdateKind.Transcribed, update1.Kind);
 
         // For choice2 (function call and result), we do not expect a concatenated text.
         Assert.True(update1.Contents.Count >= 2);

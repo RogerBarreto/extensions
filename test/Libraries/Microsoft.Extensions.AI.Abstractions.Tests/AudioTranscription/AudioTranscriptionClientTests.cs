@@ -41,6 +41,6 @@ public class AudioTranscriptionClientTests
             cts.Token);
 
         // Assert
-        Assert.Same(expectedResponse.Transcription.Text, response.Transcription.Text);
+        Assert.Same(expectedResponse.Choice.Text, response.Choice.Text);
     }
 }

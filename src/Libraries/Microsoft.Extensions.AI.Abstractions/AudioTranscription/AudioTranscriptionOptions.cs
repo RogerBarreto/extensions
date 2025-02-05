@@ -8,6 +8,8 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents the options for an audio transcription request.</summary>
 public class AudioTranscriptionOptions
 {
+    private CultureInfo? _audioLanguage;
+
     /// <summary>Gets or sets the completion ID for the audio transcription.</summary>
     /// <remarks>Long running jobs may use this ID for status pooling.</remarks>
     public string? CompletionId { get; set; }
@@ -16,7 +18,11 @@ public class AudioTranscriptionOptions
     public string? ModelId { get; set; }
 
     /// <summary>Gets or sets the language for the audio transcription.</summary>
-    public CultureInfo? AudioLanguage { get; set; }
+    public string? AudioLanguage
+    {
+        get => _audioLanguage?.Name;
+        set => _audioLanguage = value is null ? null : CultureInfo.GetCultureInfo(value);
+    }
 
     /// <summary>Gets or sets the sample rate for the audio transcription.</summary>
     public int? AudioSampleRate { get; set; }
@@ -32,7 +38,7 @@ public class AudioTranscriptionOptions
         {
             CompletionId = CompletionId,
             ModelId = ModelId,
-            AudioLanguage = (CultureInfo?)AudioLanguage?.Clone(),
+            AudioLanguage = AudioLanguage,
             AudioSampleRate = AudioSampleRate,
             AdditionalProperties = AdditionalProperties?.Clone(),
         };

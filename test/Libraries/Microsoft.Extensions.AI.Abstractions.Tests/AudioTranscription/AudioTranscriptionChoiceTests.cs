@@ -199,6 +199,7 @@ public class AudioTranscriptionChoiceTests
         choice.RawRepresentation = raw;
         Assert.Same(raw, choice.RawRepresentation);
 
+        // Ensure the idempotency of setting the same value
         choice.RawRepresentation = raw;
         Assert.Same(raw, choice.RawRepresentation);
 
@@ -220,6 +221,7 @@ public class AudioTranscriptionChoiceTests
         choice.AdditionalProperties = props;
         Assert.Same(props, choice.AdditionalProperties);
 
+        // Ensure the idempotency of setting the same value
         choice.AdditionalProperties = props;
         Assert.Same(props, choice.AdditionalProperties);
 

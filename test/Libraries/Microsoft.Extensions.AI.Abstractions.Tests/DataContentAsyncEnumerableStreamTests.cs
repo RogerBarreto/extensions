@@ -16,7 +16,7 @@ public class DataContentAsyncEnumerableStreamTests
     public void Constructor_InvalidArgs_Throws()
     {
         // Expect ArgumentNullException if source is null.
-        Assert.Throws<ArgumentNullException>("source", () => new DataContentAsyncEnumerableStreamImpl<DataContent>(null!));
+        Assert.Throws<ArgumentNullException>("dataAsyncEnumerable", () => new DataContentAsyncEnumerableStreamImpl<DataContent>(null!));
     }
 
     [Fact]
@@ -166,6 +166,11 @@ public class DataContentAsyncEnumerableStreamTests
         /// </remarks>
         internal DataContentAsyncEnumerableStreamImpl(IAsyncEnumerable<T> dataAsyncEnumerable, T? firstDataContent = null, CancellationToken cancellationToken = default)
         {
+            if (dataAsyncEnumerable is null)
+            {
+                throw new ArgumentNullException(nameof(dataAsyncEnumerable));
+            }
+
             _enumerator = dataAsyncEnumerable.GetAsyncEnumerator(cancellationToken);
             _remainingData = Array.Empty<byte>();
             _remainingDataOffset = 0;

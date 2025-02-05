@@ -12,8 +12,7 @@ public class AudioTranscriptionUpdateKindTests
     [Fact]
     public void Constructor_Value_Roundtrips()
     {
-        var kind = new AudioTranscriptionUpdateKind("abc");
-        Assert.Equal("abc", kind.Value);
+        Assert.Equal("abc", new AudioTranscriptionUpdateKind("abc").Value);
     }
 
     [Fact]

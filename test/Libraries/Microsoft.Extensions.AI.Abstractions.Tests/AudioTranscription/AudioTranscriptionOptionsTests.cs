@@ -39,20 +39,20 @@ public class AudioTranscriptionOptionsTests
 
         options.CompletionId = "completionId";
         options.ModelId = "modelId";
-        options.AudioLanguage = new CultureInfo("en-US");
+        options.AudioLanguage = "en-US";
         options.AudioSampleRate = 44100;
         options.AdditionalProperties = additionalProps;
 
         Assert.Equal("completionId", options.CompletionId);
         Assert.Equal("modelId", options.ModelId);
-        Assert.Equal(new CultureInfo("en-US"), options.AudioLanguage);
+        Assert.Equal("en-US", options.AudioLanguage);
         Assert.Equal(44100, options.AudioSampleRate);
         Assert.Same(additionalProps, options.AdditionalProperties);
 
         AudioTranscriptionOptions clone = options.Clone();
         Assert.Equal("completionId", clone.CompletionId);
         Assert.Equal("modelId", clone.ModelId);
-        Assert.Equal(new CultureInfo("en-US"), clone.AudioLanguage);
+        Assert.Equal("en-US", clone.AudioLanguage);
         Assert.Equal(44100, clone.AudioSampleRate);
         Assert.Equal(additionalProps, clone.AdditionalProperties);
     }
@@ -69,7 +69,7 @@ public class AudioTranscriptionOptionsTests
 
         options.CompletionId = "completionId";
         options.ModelId = "modelId";
-        options.AudioLanguage = new CultureInfo("en-US");
+        options.AudioLanguage = "en-US";
         options.AudioSampleRate = 44100;
         options.AdditionalProperties = additionalProps;
 
@@ -80,7 +80,7 @@ public class AudioTranscriptionOptionsTests
 
         Assert.Equal("completionId", deserialized.CompletionId);
         Assert.Equal("modelId", deserialized.ModelId);
-        Assert.Equal(new CultureInfo("en-US"), deserialized.AudioLanguage);
+        Assert.Equal("en-US", deserialized.AudioLanguage);
         Assert.Equal(44100, deserialized.AudioSampleRate);
 
         Assert.NotNull(deserialized.AdditionalProperties);
@@ -88,5 +88,27 @@ public class AudioTranscriptionOptionsTests
         Assert.True(deserialized.AdditionalProperties.TryGetValue("key", out object? value));
         Assert.IsType<JsonElement>(value);
         Assert.Equal("value", ((JsonElement)value!).GetString());
+    }
+
+    [Theory]
+    [InlineData("invalid-culture")]
+    [InlineData(" ")]
+    [InlineData("   ")]
+    public void AudioLanguage_InvalidCulture_ThrowsCultureNotFoundException(string invalidCulture)
+    {
+        AudioTranscriptionOptions options = new();
+        Assert.Throws<CultureNotFoundException>(() => options.AudioLanguage = invalidCulture);
+    }
+
+    [Fact]
+    public void AudioLanguage_EmptyString_SetsInvariantCulture()
+    {
+        AudioTranscriptionOptions options = new()
+        {
+            AudioLanguage = string.Empty,
+        };
+
+        // InvariantCulture's Name is returned when an empty string is used.
+        Assert.Equal(CultureInfo.InvariantCulture.Name, options.AudioLanguage);
     }
 }

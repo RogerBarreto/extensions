@@ -4,51 +4,50 @@
 using System.Text.Json;
 using Xunit;
 
-namespace Microsoft.Extensions.AI.Abstractions.Tests
+namespace Microsoft.Extensions.AI;
+
+public class ErrorContentTests
 {
-    public class ErrorContentTests
+    [Fact]
+    public void Constructor_ShouldInitializeProperties()
     {
-        [Fact]
-        public void Constructor_ShouldInitializeProperties()
+        // Arrange
+        string errorMessage = "Error occurred";
+        string errorCode = "ERR001";
+        string errorDetails = "Something went wrong";
+
+        // Act
+        var errorContent = new ErrorContent(errorMessage)
         {
-            // Arrange
-            string errorMessage = "Error occurred";
-            string errorCode = "ERR001";
-            string errorDetails = "Something went wrong";
+            Code = errorCode,
+            Details = errorDetails
+        };
 
-            // Act
-            var errorContent = new ErrorContent(errorMessage)
-            {
-                Code = errorCode,
-                Details = errorDetails
-            };
+        // Assert
+        Assert.Equal(errorMessage, errorContent.Message);
+        Assert.Equal(errorCode, errorContent.Code);
+        Assert.Equal(errorDetails, errorContent.Details);
+    }
 
-            // Assert
-            Assert.Equal(errorMessage, errorContent.Message);
-            Assert.Equal(errorCode, errorContent.Code);
-            Assert.Equal(errorDetails, errorContent.Details);
-        }
-
-        [Fact]
-        public void JsonSerialization_ShouldSerializeAndDeserializeCorrectly()
+    [Fact]
+    public void JsonSerialization_ShouldSerializeAndDeserializeCorrectly()
+    {
+        // Arrange
+        var errorContent = new ErrorContent("Error occurred")
         {
-            // Arrange
-            var errorContent = new ErrorContent("Error occurred")
-            {
-                Code = "ERR001",
-                Details = "Something went wrong"
-            };
-            var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+            Code = "ERR001",
+            Details = "Something went wrong"
+        };
+        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
-            // Act
-            var json = JsonSerializer.Serialize(errorContent, options);
-            var deserializedErrorContent = JsonSerializer.Deserialize<ErrorContent>(json, options);
+        // Act
+        var json = JsonSerializer.Serialize(errorContent, options);
+        var deserializedErrorContent = JsonSerializer.Deserialize<ErrorContent>(json, options);
 
-            // Assert
-            Assert.NotNull(deserializedErrorContent);
-            Assert.Equal(errorContent.Message, deserializedErrorContent!.Message);
-            Assert.Equal(errorContent.Code, deserializedErrorContent.Code);
-            Assert.Equal(errorContent.Details, deserializedErrorContent.Details);
-        }
+        // Assert
+        Assert.NotNull(deserializedErrorContent);
+        Assert.Equal(errorContent.Message, deserializedErrorContent!.Message);
+        Assert.Equal(errorContent.Code, deserializedErrorContent.Code);
+        Assert.Equal(errorContent.Details, deserializedErrorContent.Details);
     }
 }

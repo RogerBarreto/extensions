@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
@@ -39,7 +40,7 @@ internal sealed class DataContentAsyncEnumerableStream<T> : Stream
     /// </remarks>
     internal DataContentAsyncEnumerableStream(IAsyncEnumerable<T> dataAsyncEnumerable, T? firstDataContent = null, CancellationToken cancellationToken = default)
     {
-        _enumerator = dataAsyncEnumerable.GetAsyncEnumerator(cancellationToken);
+        _enumerator = Throw.IfNull(dataAsyncEnumerable).GetAsyncEnumerator(cancellationToken);
         _remainingData = Array.Empty<byte>();
         _remainingDataOffset = 0;
         _position = 0;

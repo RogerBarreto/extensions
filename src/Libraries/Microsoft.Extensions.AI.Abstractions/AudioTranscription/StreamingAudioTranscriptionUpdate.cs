@@ -116,4 +116,7 @@ public class StreamingAudioTranscriptionUpdate
         get => _contents ??= [];
         set => _contents = value;
     }
+
+    /// <inheritdoc/>
+    public override string ToString() => Contents.ConcatText();
 }
