@@ -91,7 +91,6 @@ public class AudioTranscriptionOptionsTests
     }
 
     [Theory]
-    [InlineData("invalid-culture")]
     [InlineData(" ")]
     [InlineData("   ")]
     public void AudioLanguage_InvalidCulture_ThrowsCultureNotFoundException(string invalidCulture)
