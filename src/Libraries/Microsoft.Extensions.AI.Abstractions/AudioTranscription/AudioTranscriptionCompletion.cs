@@ -44,7 +44,7 @@ public class AudioTranscriptionCompletion
     /// If <see cref="Choices"/> is empty, this property will throw. Use <see cref="Choices"/> to access all choices directly.
     /// </remarks>
     [JsonIgnore]
-    public AudioTranscriptionChoice Choice
+    public AudioTranscriptionChoice FirstChoice
     {
         get
         {

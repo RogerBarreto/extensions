@@ -34,6 +34,11 @@ public class AudioTranscriptionClientExtensionsTests
         {
             _ = AudioTranscriptionClientExtensions.TranscribeAsync(new TestAudioTranscriptionClient(), (DataContent)null!);
         });
+
+        Assert.Throws<ArgumentNullException>("audioContent", () =>
+        {
+            _ = AudioTranscriptionClientExtensions.TranscribeAsync(new TestAudioTranscriptionClient(), (IAsyncEnumerable<DataContent>)null!);
+        });
     }
 
     [Fact]
@@ -47,7 +52,12 @@ public class AudioTranscriptionClientExtensionsTests
 
         Assert.Throws<ArgumentNullException>("audioContent", () =>
         {
-            _ = AudioTranscriptionClientExtensions.TranscribeStreamingAsync(new TestAudioTranscriptionClient(), audioContent: null!);
+            _ = AudioTranscriptionClientExtensions.TranscribeStreamingAsync(new TestAudioTranscriptionClient(), (DataContent)null!);
+        });
+
+        Assert.Throws<ArgumentNullException>("audioContent", () =>
+        {
+            _ = AudioTranscriptionClientExtensions.TranscribeStreamingAsync(new TestAudioTranscriptionClient(), (IAsyncEnumerable<DataContent>)null!);
         });
     }
 

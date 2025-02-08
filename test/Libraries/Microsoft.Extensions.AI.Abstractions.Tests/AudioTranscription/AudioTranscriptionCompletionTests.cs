@@ -26,7 +26,7 @@ public class AudioTranscriptionCompletionTests
         AudioTranscriptionCompletion completion = new(choice);
 
         // The choice property returns the first (and only) choice.
-        Assert.Same(choice, completion.Choice);
+        Assert.Same(choice, completion.FirstChoice);
         Assert.Same(choice, Assert.Single(completion.Choices));
     }
 
@@ -50,7 +50,7 @@ public class AudioTranscriptionCompletionTests
     {
         AudioTranscriptionCompletion completion = new([]);
         Assert.Empty(completion.Choices);
-        Assert.Throws<InvalidOperationException>(() => completion.Choice);
+        Assert.Throws<InvalidOperationException>(() => completion.FirstChoice);
     }
 
     [Fact]
@@ -58,7 +58,7 @@ public class AudioTranscriptionCompletionTests
     {
         AudioTranscriptionChoice choice = new();
         AudioTranscriptionCompletion completion = new([choice]);
-        Assert.Same(choice, completion.Choice);
+        Assert.Same(choice, completion.FirstChoice);
         Assert.Same(choice, completion.Choices[0]);
     }
 
@@ -70,7 +70,7 @@ public class AudioTranscriptionCompletionTests
             first,
             new AudioTranscriptionChoice(),
         ]);
-        Assert.Same(first, completion.Choice);
+        Assert.Same(first, completion.FirstChoice);
         Assert.Same(first, completion.Choices[0]);
     }
 

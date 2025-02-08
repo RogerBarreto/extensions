@@ -41,4 +41,17 @@ public static class StreamExtensions
             yield return (T)Activator.CreateInstance(typeof(T), [(ReadOnlyMemory<byte>)buffer, mediaType])!;
         }
     }
+
+    /// <summary>Converts a <see cref="Stream"/> to an <see cref="IAsyncEnumerable{DataContent}"/>.</summary>
+    /// <param name="audioStream">The audio stream to convert.</param>
+    /// <param name="mediaType">The optional media type of the audio stream.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An <see cref="IAsyncEnumerable{DataContent}"/>.</returns>
+    public static IAsyncEnumerable<DataContent> ToAsyncEnumerable(
+        this Stream audioStream,
+        string? mediaType = null,
+        CancellationToken cancellationToken = default)
+    {
+        return audioStream.ToAsyncEnumerable<DataContent>(mediaType, cancellationToken);
+    }
 }
