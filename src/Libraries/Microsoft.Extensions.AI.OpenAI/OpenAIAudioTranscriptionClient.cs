@@ -87,7 +87,7 @@ public sealed class OpenAIAudioTranscriptionClient : IAudioTranscriptionClient
 
     /// <inheritdoc />
     public async Task<AudioTranscriptionCompletion> TranscribeAsync(
-        IReadOnlyList<IAsyncEnumerable<DataContent>> audioContents, AudioTranscriptionOptions? options = null, CancellationToken cancellationToken = default)
+        IList<IAsyncEnumerable<DataContent>> audioContents, AudioTranscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNullOrEmpty(audioContents);
 
@@ -149,7 +149,7 @@ public sealed class OpenAIAudioTranscriptionClient : IAudioTranscriptionClient
 
     /// <inheritdoc />
     public async IAsyncEnumerable<StreamingAudioTranscriptionUpdate> TranscribeStreamingAsync(
-        IReadOnlyList<IAsyncEnumerable<DataContent>> audioContents, AudioTranscriptionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        IList<IAsyncEnumerable<DataContent>> audioContents, AudioTranscriptionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNullOrEmpty(audioContents);
 

@@ -18,7 +18,7 @@ public sealed class TestAudioTranscriptionClient : IAudioTranscriptionClient
         new AudioTranscriptionClientMetadata("TestAudioTranscriptionClient", new Uri("http://localhost"), "test-model");
 
     // Callbacks for asynchronous operations.
-    public Func<IReadOnlyList<
+    public Func<IList<
         IAsyncEnumerable<DataContent>>,
         AudioTranscriptionOptions,
         CancellationToken,
@@ -26,7 +26,7 @@ public sealed class TestAudioTranscriptionClient : IAudioTranscriptionClient
         TranscribeAsyncCallback
     { get; set; }
 
-    public Func<IReadOnlyList<IAsyncEnumerable<DataContent>>,
+    public Func<IList<IAsyncEnumerable<DataContent>>,
         AudioTranscriptionOptions,
         CancellationToken,
         IAsyncEnumerable<StreamingAudioTranscriptionUpdate>>?
@@ -59,13 +59,13 @@ public sealed class TestAudioTranscriptionClient : IAudioTranscriptionClient
     }
 
     public Task<AudioTranscriptionCompletion> TranscribeAsync(
-        IReadOnlyList<IAsyncEnumerable<DataContent>> audioContents,
+        IList<IAsyncEnumerable<DataContent>> audioContents,
         AudioTranscriptionOptions? options = null,
         CancellationToken cancellationToken = default)
         => TranscribeAsyncCallback!(audioContents, options ?? new AudioTranscriptionOptions(), cancellationToken);
 
     public IAsyncEnumerable<StreamingAudioTranscriptionUpdate> TranscribeStreamingAsync(
-        IReadOnlyList<IAsyncEnumerable<DataContent>> audioContents,
+        IList<IAsyncEnumerable<DataContent>> audioContents,
         AudioTranscriptionOptions? options = null,
         CancellationToken cancellationToken = default)
         => TranscribeStreamingAsyncCallback!(audioContents, options ?? new AudioTranscriptionOptions(), cancellationToken);
