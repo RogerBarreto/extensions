@@ -39,8 +39,4 @@
     <ProjectReference Include="../Microsoft.Extensions.AI.Abstractions/Microsoft.Extensions.AI.Abstractions.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="ChatCompletion\" />
-  </ItemGroup>
-
 </Project>

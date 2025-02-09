@@ -51,14 +51,14 @@ public class DelegatingAudioTranscriptionClient : IAudioTranscriptionClient
     public virtual AudioTranscriptionClientMetadata Metadata => InnerClient.Metadata;
 
     /// <inheritdoc />
-    public virtual Task<AudioTranscriptionCompletion> TranscribeAsync(IReadOnlyList<
+    public virtual Task<AudioTranscriptionCompletion> TranscribeAsync(IList<
         IAsyncEnumerable<DataContent>> audioContents, AudioTranscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
         return InnerClient.TranscribeAsync(audioContents, options, cancellationToken);
     }
 
     /// <inheritdoc />
-    public virtual IAsyncEnumerable<StreamingAudioTranscriptionUpdate> TranscribeStreamingAsync(IReadOnlyList<
+    public virtual IAsyncEnumerable<StreamingAudioTranscriptionUpdate> TranscribeStreamingAsync(IList<
         IAsyncEnumerable<DataContent>> audioContents, AudioTranscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
         return InnerClient.TranscribeStreamingAsync(audioContents, options, cancellationToken);

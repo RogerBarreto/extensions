@@ -164,7 +164,7 @@ public sealed class OpenAIAudioTranscriptionClient : IAudioTranscriptionClient
             {
                 yield return new StreamingAudioTranscriptionUpdate(choice.Contents)
                 {
-                    ChoiceIndex = inputIndex,
+                    InputIndex = inputIndex,
                     Kind = AudioTranscriptionUpdateKind.Transcribed,
                     RawRepresentation = choice.RawRepresentation
                 };

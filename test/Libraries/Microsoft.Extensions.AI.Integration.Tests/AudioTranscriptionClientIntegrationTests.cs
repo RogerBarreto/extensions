@@ -100,13 +100,13 @@ public abstract class AudioTranscriptionClientIntegrationTests : IDisposable
             }
         }
 
-        string responseText = firstSb.ToString();
-        Assert.Contains("finally", responseText, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("gym", responseText, StringComparison.OrdinalIgnoreCase);
+        string firstTranscription = firstSb.ToString();
+        Assert.Contains("finally", firstTranscription, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("gym", firstTranscription, StringComparison.OrdinalIgnoreCase);
 
-        responseText = secondSb.ToString();
-        Assert.Contains("who would", responseText, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("go for", responseText, StringComparison.OrdinalIgnoreCase);
+        string secondTranscription = secondSb.ToString();
+        Assert.Contains("who would", secondTranscription, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("go for", secondTranscription, StringComparison.OrdinalIgnoreCase);
     }
 
     private static Stream GetAudioStream(string fileName)

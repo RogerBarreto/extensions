@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using OpenAI;
+using OpenAI.Audio;
 using OpenAI.Chat;
 using OpenAI.Embeddings;
 
@@ -22,6 +23,19 @@ public static class OpenAIClientExtensions
     /// <returns>An <see cref="IChatClient"/> that can be used to converse via the <see cref="ChatClient"/>.</returns>
     public static IChatClient AsChatClient(this ChatClient chatClient) =>
         new OpenAIChatClient(chatClient);
+
+    /// <summary>Gets an <see cref="IAudioTranscriptionClient"/> for use with this <see cref="OpenAIClient"/>.</summary>
+    /// <param name="openAIClient">The client.</param>
+    /// <param name="modelId">The model.</param>
+    /// <returns>An <see cref="IAudioTranscriptionClient"/> that can be used to transcribe audio via the <see cref="OpenAIClient"/>.</returns>
+    public static IAudioTranscriptionClient AsAudioTranscriptionClient(this OpenAIClient openAIClient, string modelId) =>
+        new OpenAIAudioTranscriptionClient(openAIClient, modelId);
+
+    /// <summary>Gets an <see cref="IAudioTranscriptionClient"/> for use with this <see cref="AudioClient"/>.</summary>
+    /// <param name="audioClient">The client.</param>
+    /// <returns>An <see cref="IAudioTranscriptionClient"/> that can be used to transcribe audio via the <see cref="AudioClient"/>.</returns>
+    public static IAudioTranscriptionClient AsAudioTranscriptionClient(this AudioClient audioClient) =>
+        new OpenAIAudioTranscriptionClient(audioClient);
 
     /// <summary>Gets an <see cref="IEmbeddingGenerator{String, Single}"/> for use with this <see cref="OpenAIClient"/>.</summary>
     /// <param name="openAIClient">The client.</param>
