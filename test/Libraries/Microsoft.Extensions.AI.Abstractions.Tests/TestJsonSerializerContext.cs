@@ -14,11 +14,11 @@ namespace Microsoft.Extensions.AI;
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     UseStringEnumConverter = true)]
+[JsonSerializable(typeof(ChatResponse))]
+[JsonSerializable(typeof(ChatResponseUpdate))]
 [JsonSerializable(typeof(AudioTranscriptionCompletion))]
 [JsonSerializable(typeof(StreamingAudioTranscriptionUpdate))]
 [JsonSerializable(typeof(AudioTranscriptionOptions))]
-[JsonSerializable(typeof(ChatCompletion))]
-[JsonSerializable(typeof(StreamingChatCompletionUpdate))]
 [JsonSerializable(typeof(ChatOptions))]
 [JsonSerializable(typeof(EmbeddingGenerationOptions))]
 [JsonSerializable(typeof(Dictionary<string, object?>))]
