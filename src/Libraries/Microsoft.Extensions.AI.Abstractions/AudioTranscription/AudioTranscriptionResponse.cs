@@ -10,22 +10,22 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents the result of an audio transcription request.</summary>
-public class AudioTranscriptionCompletion
+public class AudioTranscriptionResponse
 {
     /// <summary>The list of choices in the completion.</summary>
     private IList<AudioTranscriptionChoice> _choices;
 
-    /// <summary>Initializes a new instance of the <see cref="AudioTranscriptionCompletion"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="AudioTranscriptionResponse"/> class.</summary>
     /// <param name="choices">The list of choices in the completion, one message per choice.</param>
     [JsonConstructor]
-    public AudioTranscriptionCompletion(IList<AudioTranscriptionChoice> choices)
+    public AudioTranscriptionResponse(IList<AudioTranscriptionChoice> choices)
     {
         _choices = Throw.IfNull(choices);
     }
 
-    /// <summary>Initializes a new instance of the <see cref="AudioTranscriptionCompletion"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="AudioTranscriptionResponse"/> class.</summary>
     /// <param name="choice">The transcription representing the singular choice in the completion.</param>
-    public AudioTranscriptionCompletion(AudioTranscriptionChoice choice)
+    public AudioTranscriptionResponse(AudioTranscriptionChoice choice)
     {
         _ = Throw.IfNull(choice);
         _choices = [choice];
@@ -51,7 +51,7 @@ public class AudioTranscriptionCompletion
             var choices = Choices;
             if (choices.Count == 0)
             {
-                throw new InvalidOperationException($"The {nameof(AudioTranscriptionCompletion)} instance does not contain any {nameof(AudioTranscriptionChoice)} choices.");
+                throw new InvalidOperationException($"The {nameof(AudioTranscriptionResponse)} instance does not contain any {nameof(AudioTranscriptionChoice)} choices.");
             }
 
             return choices[0];
@@ -66,7 +66,7 @@ public class AudioTranscriptionCompletion
 
     /// <summary>Gets or sets the raw representation of the audio transcription completion from an underlying implementation.</summary>
     /// <remarks>
-    /// If a <see cref="AudioTranscriptionCompletion"/> is created to represent some underlying object from another object
+    /// If a <see cref="AudioTranscriptionResponse"/> is created to represent some underlying object from another object
     /// model, this property can be used to store that original object. This can be useful for debugging or
     /// for enabling a consumer to access the underlying object model if needed.
     /// </remarks>
@@ -98,27 +98,27 @@ public class AudioTranscriptionCompletion
         return sb.ToString();
     }
 
-    /// <summary>Creates an array of <see cref="StreamingAudioTranscriptionUpdate" /> instances that represent this <see cref="AudioTranscriptionCompletion" />.</summary>
-    /// <returns>An array of <see cref="StreamingAudioTranscriptionUpdate" /> instances that may be used to represent this <see cref="AudioTranscriptionCompletion" />.</returns>
-    public StreamingAudioTranscriptionUpdate[] ToStreamingAudioTranscriptionUpdates()
+    /// <summary>Creates an array of <see cref="AudioTranscriptionResponseUpdate" /> instances that represent this <see cref="AudioTranscriptionResponse" />.</summary>
+    /// <returns>An array of <see cref="AudioTranscriptionResponseUpdate" /> instances that may be used to represent this <see cref="AudioTranscriptionResponse" />.</returns>
+    public AudioTranscriptionResponseUpdate[] ToStreamingAudioTranscriptionUpdates()
     {
-        StreamingAudioTranscriptionUpdate? extra = null;
+        AudioTranscriptionResponseUpdate? extra = null;
         if (AdditionalProperties is not null)
         {
-            extra = new StreamingAudioTranscriptionUpdate
+            extra = new AudioTranscriptionResponseUpdate
             {
-                Kind = AudioTranscriptionUpdateKind.Transcribed,
+                Kind = AudioTranscriptionResponseUpdateKind.Transcribed,
                 AdditionalProperties = AdditionalProperties,
             };
         }
 
         int choicesCount = Choices.Count;
-        var updates = new StreamingAudioTranscriptionUpdate[choicesCount + 1 + (extra is null ? 0 : 1)];
+        var updates = new AudioTranscriptionResponseUpdate[choicesCount + 1 + (extra is null ? 0 : 1)];
 
         for (int choiceIndex = 0; choiceIndex < choicesCount; choiceIndex++)
         {
             AudioTranscriptionChoice choice = Choices[choiceIndex];
-            updates[choiceIndex] = new StreamingAudioTranscriptionUpdate
+            updates[choiceIndex] = new AudioTranscriptionResponseUpdate
             {
                 ChoiceIndex = choiceIndex,
                 InputIndex = choice.InputIndex,
@@ -129,7 +129,7 @@ public class AudioTranscriptionCompletion
                 StartTime = choice.StartTime,
                 EndTime = choice.EndTime,
 
-                Kind = AudioTranscriptionUpdateKind.Transcribed,
+                Kind = AudioTranscriptionResponseUpdateKind.Transcribed,
                 CompletionId = CompletionId,
                 ModelId = ModelId,
             };

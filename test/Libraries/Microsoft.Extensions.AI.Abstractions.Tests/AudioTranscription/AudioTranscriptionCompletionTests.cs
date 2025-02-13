@@ -15,15 +15,15 @@ public class AudioTranscriptionCompletionTests
     [Fact]
     public void Constructor_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("choice", () => new AudioTranscriptionCompletion((AudioTranscriptionChoice)null!));
-        Assert.Throws<ArgumentNullException>("choices", () => new AudioTranscriptionCompletion((IList<AudioTranscriptionChoice>)null!));
+        Assert.Throws<ArgumentNullException>("choice", () => new AudioTranscriptionResponse((AudioTranscriptionChoice)null!));
+        Assert.Throws<ArgumentNullException>("choices", () => new AudioTranscriptionResponse((IList<AudioTranscriptionChoice>)null!));
     }
 
     [Fact]
     public void Constructor_Choice_Roundtrips()
     {
         AudioTranscriptionChoice choice = new();
-        AudioTranscriptionCompletion completion = new(choice);
+        AudioTranscriptionResponse completion = new(choice);
 
         // The choice property returns the first (and only) choice.
         Assert.Same(choice, completion.Choice);
@@ -40,7 +40,7 @@ public class AudioTranscriptionCompletionTests
             new AudioTranscriptionChoice(),
         ];
 
-        AudioTranscriptionCompletion completion = new(choices);
+        AudioTranscriptionResponse completion = new(choices);
         Assert.Same(choices, completion.Choices);
         Assert.Equal(3, choices.Count);
     }
@@ -48,7 +48,7 @@ public class AudioTranscriptionCompletionTests
     [Fact]
     public void Transcription_EmptyChoices_Throws()
     {
-        AudioTranscriptionCompletion completion = new([]);
+        AudioTranscriptionResponse completion = new([]);
         Assert.Empty(completion.Choices);
         Assert.Throws<InvalidOperationException>(() => completion.Choice);
     }
@@ -57,7 +57,7 @@ public class AudioTranscriptionCompletionTests
     public void Transcription_SingleChoice_Returned()
     {
         AudioTranscriptionChoice choice = new();
-        AudioTranscriptionCompletion completion = new([choice]);
+        AudioTranscriptionResponse completion = new([choice]);
         Assert.Same(choice, completion.Choice);
         Assert.Same(choice, completion.Choices[0]);
     }
@@ -66,7 +66,7 @@ public class AudioTranscriptionCompletionTests
     public void Transcription_MultipleChoices_ReturnsFirst()
     {
         AudioTranscriptionChoice first = new();
-        AudioTranscriptionCompletion completion = new([
+        AudioTranscriptionResponse completion = new([
             first,
             new AudioTranscriptionChoice(),
         ]);
@@ -77,14 +77,14 @@ public class AudioTranscriptionCompletionTests
     [Fact]
     public void Choices_SetNull_Throws()
     {
-        AudioTranscriptionCompletion completion = new([]);
+        AudioTranscriptionResponse completion = new([]);
         Assert.Throws<ArgumentNullException>("value", () => completion.Choices = null!);
     }
 
     [Fact]
     public void Properties_Roundtrip()
     {
-        AudioTranscriptionCompletion completion = new([]);
+        AudioTranscriptionResponse completion = new([]);
         Assert.Null(completion.CompletionId);
         completion.CompletionId = "id";
         Assert.Equal("id", completion.CompletionId);
@@ -112,7 +112,7 @@ public class AudioTranscriptionCompletionTests
     [Fact]
     public void JsonSerialization_Roundtrips()
     {
-        AudioTranscriptionCompletion original = new(
+        AudioTranscriptionResponse original = new(
         [
             new AudioTranscriptionChoice("Choice1"),
             new AudioTranscriptionChoice("Choice2"),
@@ -126,9 +126,9 @@ public class AudioTranscriptionCompletionTests
             AdditionalProperties = new() { ["key"] = "value" },
         };
 
-        string json = JsonSerializer.Serialize(original, TestJsonSerializerContext.Default.AudioTranscriptionCompletion);
+        string json = JsonSerializer.Serialize(original, TestJsonSerializerContext.Default.AudioTranscriptionResponse);
 
-        AudioTranscriptionCompletion? result = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.AudioTranscriptionCompletion);
+        AudioTranscriptionResponse? result = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.AudioTranscriptionResponse);
 
         Assert.NotNull(result);
         Assert.Equal(4, result.Choices.Count);
@@ -151,7 +151,7 @@ public class AudioTranscriptionCompletionTests
     [Fact]
     public void ToString_SingleChoice_OutputsChoiceText()
     {
-        AudioTranscriptionCompletion completion = new(
+        AudioTranscriptionResponse completion = new(
         [
             new AudioTranscriptionChoice("This is a test." + Environment.NewLine + "It's multiple lines.")
         ]);
@@ -161,7 +161,7 @@ public class AudioTranscriptionCompletionTests
     [Fact]
     public void ToString_MultipleChoices_OutputsAllChoicesWithPrefix()
     {
-        AudioTranscriptionCompletion completion = new(
+        AudioTranscriptionResponse completion = new(
         [
             new AudioTranscriptionChoice("This is a test." + Environment.NewLine + "It's multiple lines."),
             new AudioTranscriptionChoice("So is" + Environment.NewLine + " this."),
@@ -195,7 +195,7 @@ public class AudioTranscriptionCompletionTests
             EndTime = TimeSpan.FromSeconds(2)
         };
 
-        AudioTranscriptionCompletion completion = new(choice)
+        AudioTranscriptionResponse completion = new(choice)
         {
             CompletionId = "12345",
             ModelId = "someModel",
@@ -203,24 +203,24 @@ public class AudioTranscriptionCompletionTests
         };
 
         // Act: convert to streaming updates.
-        StreamingAudioTranscriptionUpdate[] updates = completion.ToStreamingAudioTranscriptionUpdates();
+        AudioTranscriptionResponseUpdate[] updates = completion.ToStreamingAudioTranscriptionUpdates();
 
         // Filter out any null entries (if any).
-        StreamingAudioTranscriptionUpdate[] nonNullUpdates = updates.Where(u => u is not null).ToArray();
+        AudioTranscriptionResponseUpdate[] nonNullUpdates = updates.Where(u => u is not null).ToArray();
 
         // Our implementation creates one update per choice plus an extra update if AdditionalProperties exists.
         Assert.Equal(2, nonNullUpdates.Length);
 
-        StreamingAudioTranscriptionUpdate update0 = nonNullUpdates[0];
+        AudioTranscriptionResponseUpdate update0 = nonNullUpdates[0];
         Assert.Equal("12345", update0.CompletionId);
         Assert.Equal("someModel", update0.ModelId);
-        Assert.Equal(AudioTranscriptionUpdateKind.Transcribed, update0.Kind);
+        Assert.Equal(AudioTranscriptionResponseUpdateKind.Transcribed, update0.Kind);
         Assert.Equal(choice.Text, update0.Text);
         Assert.Equal(choice.InputIndex, update0.InputIndex);
         Assert.Equal(choice.StartTime, update0.StartTime);
         Assert.Equal(choice.EndTime, update0.EndTime);
 
-        StreamingAudioTranscriptionUpdate updateExtra = nonNullUpdates[1];
+        AudioTranscriptionResponseUpdate updateExtra = nonNullUpdates[1];
 
         // The extra update carries the AdditionalProperties from the completion.
         Assert.Null(updateExtra.Text);
@@ -246,14 +246,14 @@ public class AudioTranscriptionCompletionTests
         AudioTranscriptionChoice choice2 = new(
         [
             new FunctionCallContent("call123", "name"),
-            new FunctionResultContent("call123", "name", 42),
+            new FunctionResultContent("call123", 42),
         ])
         {
             AdditionalProperties = new() { ["choice2Key"] = "choice2Value" },
             InputIndex = 1
         };
 
-        AudioTranscriptionCompletion completion = new([choice1, choice2])
+        AudioTranscriptionResponse completion = new([choice1, choice2])
         {
             CompletionId = "12345",
             ModelId = "someModel",
@@ -261,17 +261,17 @@ public class AudioTranscriptionCompletionTests
         };
 
         // Act: convert to streaming updates.
-        StreamingAudioTranscriptionUpdate[] updates = completion.ToStreamingAudioTranscriptionUpdates();
-        StreamingAudioTranscriptionUpdate[] nonNullUpdates = updates.Where(u => u is not null).ToArray();
+        AudioTranscriptionResponseUpdate[] updates = completion.ToStreamingAudioTranscriptionUpdates();
+        AudioTranscriptionResponseUpdate[] nonNullUpdates = updates.Where(u => u is not null).ToArray();
 
         // Two choices plus an extra update should yield 3 updates.
         Assert.Equal(3, nonNullUpdates.Length);
 
         // Validate update from first choice.
-        StreamingAudioTranscriptionUpdate update0 = nonNullUpdates[0];
+        AudioTranscriptionResponseUpdate update0 = nonNullUpdates[0];
         Assert.Equal("12345", update0.CompletionId);
         Assert.Equal("someModel", update0.ModelId);
-        Assert.Equal(AudioTranscriptionUpdateKind.Transcribed, update0.Kind);
+        Assert.Equal(AudioTranscriptionResponseUpdateKind.Transcribed, update0.Kind);
         Assert.Equal("Hello, ", Assert.IsType<TextContent>(update0.Contents[0]).Text);
         Assert.Equal("image/png", Assert.IsType<DataContent>(update0.Contents[1]).MediaType);
         Assert.Equal("world!", Assert.IsType<TextContent>(update0.Contents[2]).Text);
@@ -279,10 +279,10 @@ public class AudioTranscriptionCompletionTests
         Assert.Equal("choice1Value", update0.AdditionalProperties?["choice1Key"]);
 
         // Validate update from second choice.
-        StreamingAudioTranscriptionUpdate update1 = nonNullUpdates[1];
+        AudioTranscriptionResponseUpdate update1 = nonNullUpdates[1];
         Assert.Equal("12345", update1.CompletionId);
         Assert.Equal("someModel", update1.ModelId);
-        Assert.Equal(AudioTranscriptionUpdateKind.Transcribed, update1.Kind);
+        Assert.Equal(AudioTranscriptionResponseUpdateKind.Transcribed, update1.Kind);
 
         // For choice2 (function call and result), we do not expect a concatenated text.
         Assert.True(update1.Contents.Count >= 2);
@@ -291,7 +291,7 @@ public class AudioTranscriptionCompletionTests
         Assert.Equal("choice2Value", update1.AdditionalProperties?["choice2Key"]);
 
         // Validate the extra update.
-        StreamingAudioTranscriptionUpdate updateExtra = nonNullUpdates[2];
+        AudioTranscriptionResponseUpdate updateExtra = nonNullUpdates[2];
         Assert.Null(updateExtra.Text);
         Assert.Equal("value1", updateExtra.AdditionalProperties?["key1"]);
         Assert.Equal(42, updateExtra.AdditionalProperties?["key2"]);

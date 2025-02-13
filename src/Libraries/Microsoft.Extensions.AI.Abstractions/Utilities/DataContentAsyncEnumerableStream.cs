@@ -22,6 +22,7 @@ internal sealed class DataContentAsyncEnumerableStream<T> : Stream
     where T : DataContent
 {
     private readonly IAsyncEnumerator<T> _enumerator;
+    private bool _asyncDisposed;
     private bool _isCompleted;
     private byte[] _remainingData;
     private int _remainingDataOffset;
@@ -126,8 +127,7 @@ internal sealed class DataContentAsyncEnumerableStream<T> : Stream
 
                 if (!_enumerator.Current.Data.HasValue)
                 {
-                    _isCompleted = true;
-                    break;
+                    throw new InvalidOperationException("One of the data contents provided has no data.");
                 }
 
                 _remainingData = _enumerator.Current.Data.Value.ToArray();
@@ -175,11 +175,14 @@ internal sealed class DataContentAsyncEnumerableStream<T> : Stream
                 }
 
                 // Move to the next chunk in the async enumerator
-                if (!await _enumerator.MoveNextAsync().ConfigureAwait(false) ||
-                    !_enumerator.Current.Data.HasValue)
+                if (!await _enumerator.MoveNextAsync().ConfigureAwait(false))
                 {
                     _isCompleted = true;
-                    break;
+                }
+
+                if (!_enumerator.Current.Data.HasValue)
+                {
+                    throw new InvalidOperationException("One of the data contents provided has no data.");
                 }
 
                 _remainingData = _enumerator.Current.Data.Value.ToArray();
@@ -198,11 +201,17 @@ internal sealed class DataContentAsyncEnumerableStream<T> : Stream
         await _enumerator.DisposeAsync().ConfigureAwait(false);
 
         await base.DisposeAsync().ConfigureAwait(false);
+
+        _asyncDisposed = true;
+
+        Dispose();
     }
 #else
     public async ValueTask DisposeAsync()
     {
         await _enumerator.DisposeAsync().ConfigureAwait(false);
+
+        _asyncDisposed = true;
 
         Dispose();
     }
@@ -217,9 +226,15 @@ internal sealed class DataContentAsyncEnumerableStream<T> : Stream
     /// <inheritdoc/>
     protected override void Dispose(bool disposing)
     {
-        if (disposing)
+        if (disposing && !_asyncDisposed)
         {
-            var task = Task.Run(_enumerator.DisposeAsync);
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
+            var task = _enumerator.DisposeAsync();
+            if (!task.IsCompleted)
+            {
+                task.AsTask().GetAwaiter().GetResult();
+            }
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
         }
 
         base.Dispose(disposing);

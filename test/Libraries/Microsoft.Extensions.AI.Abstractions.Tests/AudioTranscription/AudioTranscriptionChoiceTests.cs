@@ -104,7 +104,7 @@ public class AudioTranscriptionChoiceTests
             new FunctionCallContent("callId1", "fc1"),
             new TextContent("text-1"),
             new TextContent("text-2"),
-            new FunctionResultContent("callId1", "fc2", "result"),
+            new FunctionResultContent("callId1", "result"),
         ]);
 
         TextContent textContent = Assert.IsType<TextContent>(choice.Contents[3]);
@@ -283,7 +283,7 @@ public class AudioTranscriptionChoiceTests
                 AdditionalProperties = new() { ["metadata-key-4"] = "metadata-value-4" }
             },
             new FunctionCallContent("function-id", "plugin-name-function-name", new Dictionary<string, object?> { ["parameter"] = "argument" }),
-            new FunctionResultContent("function-id", "plugin-name-function-name", "function-result"),
+            new FunctionResultContent("function-id", "function-result"),
         ];
 
         // Act

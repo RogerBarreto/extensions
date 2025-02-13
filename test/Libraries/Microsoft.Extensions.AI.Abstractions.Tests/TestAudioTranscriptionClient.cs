@@ -22,14 +22,14 @@ public sealed class TestAudioTranscriptionClient : IAudioTranscriptionClient
         IAsyncEnumerable<DataContent>>,
         AudioTranscriptionOptions,
         CancellationToken,
-        Task<AudioTranscriptionCompletion>>?
+        Task<AudioTranscriptionResponse>>?
         TranscribeAsyncCallback
     { get; set; }
 
     public Func<IReadOnlyList<IAsyncEnumerable<DataContent>>,
         AudioTranscriptionOptions,
         CancellationToken,
-        IAsyncEnumerable<StreamingAudioTranscriptionUpdate>>?
+        IAsyncEnumerable<AudioTranscriptionResponseUpdate>>?
         TranscribeStreamingAsyncCallback
     { get; set; }
 
@@ -58,13 +58,13 @@ public sealed class TestAudioTranscriptionClient : IAudioTranscriptionClient
         return null;
     }
 
-    public Task<AudioTranscriptionCompletion> TranscribeAsync(
+    public Task<AudioTranscriptionResponse> TranscribeAsync(
         IReadOnlyList<IAsyncEnumerable<DataContent>> audioContents,
         AudioTranscriptionOptions? options = null,
         CancellationToken cancellationToken = default)
         => TranscribeAsyncCallback!(audioContents, options ?? new AudioTranscriptionOptions(), cancellationToken);
 
-    public IAsyncEnumerable<StreamingAudioTranscriptionUpdate> TranscribeStreamingAsync(
+    public IAsyncEnumerable<AudioTranscriptionResponseUpdate> TranscribeStreamingAsync(
         IReadOnlyList<IAsyncEnumerable<DataContent>> audioContents,
         AudioTranscriptionOptions? options = null,
         CancellationToken cancellationToken = default)

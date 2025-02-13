@@ -13,11 +13,11 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Provides extension methods for working with <see cref="StreamingAudioTranscriptionUpdate"/> instances.
+/// Provides extension methods for working with <see cref="AudioTranscriptionResponseUpdate"/> instances.
 /// </summary>
-public static class StreamingAudioTranscriptionUpdateExtensions
+public static class AudioTranscriptionResponseUpdateExtensions
 {
-    /// <summary>Combines <see cref="StreamingAudioTranscriptionUpdate"/> instances into a single <see cref="AudioTranscriptionCompletion"/>.</summary>
+    /// <summary>Combines <see cref="AudioTranscriptionResponseUpdate"/> instances into a single <see cref="AudioTranscriptionResponse"/>.</summary>
     /// <param name="updates">The updates to be combined.</param>
     /// <param name="coalesceContent">
     /// <see langword="true"/> to attempt to coalesce contiguous <see cref="AIContent"/> items, where applicable,
@@ -25,13 +25,13 @@ public static class StreamingAudioTranscriptionUpdateExtensions
     /// the manufactured <see cref="AudioTranscriptionChoice"/> instances. When <see langword="false"/>, the original content items are used.
     /// The default is <see langword="true"/>.
     /// </param>
-    /// <returns>The combined <see cref="AudioTranscriptionCompletion"/>.</returns>
-    public static AudioTranscriptionCompletion ToAudioTranscriptionCompletion(
-        this IEnumerable<StreamingAudioTranscriptionUpdate> updates, bool coalesceContent = true)
+    /// <returns>The combined <see cref="AudioTranscriptionResponse"/>.</returns>
+    public static AudioTranscriptionResponse ToAudioTranscriptionCompletion(
+        this IEnumerable<AudioTranscriptionResponseUpdate> updates, bool coalesceContent = true)
     {
         _ = Throw.IfNull(updates);
 
-        AudioTranscriptionCompletion completion = new([]);
+        AudioTranscriptionResponse completion = new([]);
         Dictionary<int, AudioTranscriptionChoice> choices = [];
 
         foreach (var update in updates)
@@ -44,7 +44,7 @@ public static class StreamingAudioTranscriptionUpdateExtensions
         return completion;
     }
 
-    /// <summary>Combines <see cref="StreamingAudioTranscriptionUpdate"/> instances into a single <see cref="AudioTranscriptionCompletion"/>.</summary>
+    /// <summary>Combines <see cref="AudioTranscriptionResponseUpdate"/> instances into a single <see cref="AudioTranscriptionResponse"/>.</summary>
     /// <param name="updates">The updates to be combined.</param>
     /// <param name="coalesceContent">
     /// <see langword="true"/> to attempt to coalesce contiguous <see cref="AIContent"/> items, where applicable,
@@ -53,18 +53,18 @@ public static class StreamingAudioTranscriptionUpdateExtensions
     /// The default is <see langword="true"/>.
     /// </param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The combined <see cref="AudioTranscriptionCompletion"/>.</returns>
-    public static Task<AudioTranscriptionCompletion> ToAudioTranscriptionCompletionAsync(
-        this IAsyncEnumerable<StreamingAudioTranscriptionUpdate> updates, bool coalesceContent = true, CancellationToken cancellationToken = default)
+    /// <returns>The combined <see cref="AudioTranscriptionResponse"/>.</returns>
+    public static Task<AudioTranscriptionResponse> ToAudioTranscriptionCompletionAsync(
+        this IAsyncEnumerable<AudioTranscriptionResponseUpdate> updates, bool coalesceContent = true, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(updates);
 
         return ToAudioCompletionAsync(updates, coalesceContent, cancellationToken);
 
-        static async Task<AudioTranscriptionCompletion> ToAudioCompletionAsync(
-            IAsyncEnumerable<StreamingAudioTranscriptionUpdate> updates, bool coalesceContent, CancellationToken cancellationToken)
+        static async Task<AudioTranscriptionResponse> ToAudioCompletionAsync(
+            IAsyncEnumerable<AudioTranscriptionResponseUpdate> updates, bool coalesceContent, CancellationToken cancellationToken)
         {
-            AudioTranscriptionCompletion completion = new([]);
+            AudioTranscriptionResponse completion = new([]);
             Dictionary<int, AudioTranscriptionChoice> choices = [];
 
             await foreach (var update in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
@@ -78,11 +78,11 @@ public static class StreamingAudioTranscriptionUpdateExtensions
         }
     }
 
-    /// <summary>Processes the <see cref="StreamingAudioTranscriptionUpdate"/>, incorporating its contents into <paramref name="choices"/> and <paramref name="completion"/>.</summary>
+    /// <summary>Processes the <see cref="AudioTranscriptionResponseUpdate"/>, incorporating its contents into <paramref name="choices"/> and <paramref name="completion"/>.</summary>
     /// <param name="update">The update to process.</param>
-    /// <param name="choices">The dictionary mapping <see cref="StreamingAudioTranscriptionUpdate.ChoiceIndex"/> to the <see cref="AudioTranscriptionChoice"/> being built for that choice.</param>
-    /// <param name="completion">The <see cref="AudioTranscriptionCompletion"/> object whose properties should be updated based on <paramref name="update"/>.</param>
-    private static void ProcessUpdate(StreamingAudioTranscriptionUpdate update, Dictionary<int, AudioTranscriptionChoice> choices, AudioTranscriptionCompletion completion)
+    /// <param name="choices">The dictionary mapping <see cref="AudioTranscriptionResponseUpdate.ChoiceIndex"/> to the <see cref="AudioTranscriptionChoice"/> being built for that choice.</param>
+    /// <param name="completion">The <see cref="AudioTranscriptionResponse"/> object whose properties should be updated based on <paramref name="update"/>.</param>
+    private static void ProcessUpdate(AudioTranscriptionResponseUpdate update, Dictionary<int, AudioTranscriptionChoice> choices, AudioTranscriptionResponse completion)
     {
         completion.CompletionId ??= update.CompletionId;
         completion.ModelId ??= update.ModelId;
@@ -118,9 +118,9 @@ public static class StreamingAudioTranscriptionUpdateExtensions
 
     /// <summary>Finalizes the <paramref name="completion"/> object by transferring the <paramref name="choices"/> into it.</summary>
     /// <param name="choices">The messages to process further and transfer into <paramref name="completion"/>.</param>
-    /// <param name="completion">The result <see cref="AudioTranscriptionCompletion"/> being built.</param>
+    /// <param name="completion">The result <see cref="AudioTranscriptionResponse"/> being built.</param>
     /// <param name="coalesceContent">The corresponding option value provided to <see cref="ToAudioTranscriptionCompletion"/> or <see cref="ToAudioTranscriptionCompletionAsync"/>.</param>
-    private static void AddChoicesToCompletion(Dictionary<int, AudioTranscriptionChoice> choices, AudioTranscriptionCompletion completion, bool coalesceContent)
+    private static void AddChoicesToCompletion(Dictionary<int, AudioTranscriptionChoice> choices, AudioTranscriptionResponse completion, bool coalesceContent)
     {
         if (choices.Count <= 1)
         {
@@ -153,12 +153,12 @@ public static class StreamingAudioTranscriptionUpdateExtensions
             // conflicting values across the choices, it would be unclear which one should be used.
         }
 
-        static void AddChoice(AudioTranscriptionCompletion completion, bool coalesceContent, KeyValuePair<int, AudioTranscriptionChoice> entry)
+        static void AddChoice(AudioTranscriptionResponse completion, bool coalesceContent, KeyValuePair<int, AudioTranscriptionChoice> entry)
         {
             if (coalesceContent)
             {
                 // Consider moving to a utility method.
-                StreamingChatCompletionUpdateExtensions.CoalesceTextContent((List<AIContent>)entry.Value.Contents);
+                ChatResponseUpdateExtensions.CoalesceTextContent((List<AIContent>)entry.Value.Contents);
             }
 
             completion.Choices.Add(entry.Value);

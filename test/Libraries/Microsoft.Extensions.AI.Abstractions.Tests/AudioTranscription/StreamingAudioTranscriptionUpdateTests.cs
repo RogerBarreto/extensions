@@ -13,9 +13,9 @@ public class StreamingAudioTranscriptionUpdateTests
     [Fact]
     public void Constructor_PropsDefaulted()
     {
-        StreamingAudioTranscriptionUpdate update = new();
+        AudioTranscriptionResponseUpdate update = new();
 
-        Assert.Equal(AudioTranscriptionUpdateKind.Transcribing, update.Kind);
+        Assert.Equal(AudioTranscriptionResponseUpdateKind.Transcribing, update.Kind);
         Assert.Null(update.Text);
         Assert.Empty(update.Contents);
         Assert.Null(update.CompletionId);
@@ -28,11 +28,11 @@ public class StreamingAudioTranscriptionUpdateTests
     [Fact]
     public void Properties_Roundtrip()
     {
-        StreamingAudioTranscriptionUpdate update = new()
+        AudioTranscriptionResponseUpdate update = new()
         {
             InputIndex = 5,
             ChoiceIndex = 42,
-            Kind = new AudioTranscriptionUpdateKind("custom"),
+            Kind = new AudioTranscriptionResponseUpdateKind("custom"),
         };
 
         Assert.Equal(5, update.InputIndex);
@@ -65,14 +65,14 @@ public class StreamingAudioTranscriptionUpdateTests
     [Fact]
     public void Text_GetSet_UsesFirstTextContent()
     {
-        StreamingAudioTranscriptionUpdate update = new(
+        AudioTranscriptionResponseUpdate update = new(
         [
             new DataContent("http://localhost/audio", "application/octet-stream"),
             new DataContent("http://localhost/image", "application/octet-stream"),
             new FunctionCallContent("callId1", "fc1"),
             new TextContent("text-1"),
             new TextContent("text-2"),
-            new FunctionResultContent("callId1", "fc2", "result"),
+            new FunctionResultContent("callId1", "result"),
         ]);
 
         // The getter returns the text of the first TextContent (which is at index 3).
@@ -94,7 +94,7 @@ public class StreamingAudioTranscriptionUpdateTests
     [Fact]
     public void Text_Set_AddsTextMessageToEmptyList()
     {
-        StreamingAudioTranscriptionUpdate update = new();
+        AudioTranscriptionResponseUpdate update = new();
         Assert.Empty(update.Contents);
 
         update.Text = "text-1";
@@ -108,7 +108,7 @@ public class StreamingAudioTranscriptionUpdateTests
     [Fact]
     public void Text_Set_AddsTextMessageToListWithNoText()
     {
-        StreamingAudioTranscriptionUpdate update = new(
+        AudioTranscriptionResponseUpdate update = new(
         [
             new DataContent("http://localhost/audio", "application/octet-stream"),
             new DataContent("http://localhost/image", "application/octet-stream"),
@@ -135,11 +135,11 @@ public class StreamingAudioTranscriptionUpdateTests
     [Fact]
     public void JsonSerialization_Roundtrips()
     {
-        StreamingAudioTranscriptionUpdate original = new()
+        AudioTranscriptionResponseUpdate original = new()
         {
             InputIndex = 7,
             ChoiceIndex = 3,
-            Kind = new AudioTranscriptionUpdateKind("transcribed"),
+            Kind = new AudioTranscriptionResponseUpdateKind("transcribed"),
             CompletionId = "id123",
             StartTime = TimeSpan.FromSeconds(5),
             EndTime = TimeSpan.FromSeconds(10),
@@ -150,8 +150,8 @@ public class StreamingAudioTranscriptionUpdateTests
             }
         };
 
-        string json = JsonSerializer.Serialize(original, TestJsonSerializerContext.Default.StreamingAudioTranscriptionUpdate);
-        StreamingAudioTranscriptionUpdate? result = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.StreamingAudioTranscriptionUpdate);
+        string json = JsonSerializer.Serialize(original, TestJsonSerializerContext.Default.AudioTranscriptionResponseUpdate);
+        AudioTranscriptionResponseUpdate? result = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.AudioTranscriptionResponseUpdate);
         Assert.NotNull(result);
 
         Assert.Equal(original.InputIndex, result.InputIndex);

@@ -14,7 +14,7 @@ public class AudioTranscriptionClientTests
     {
         // Arrange
         // We simulate a transcription result by returning an AudioTranscriptionCompletion built from an AudioTranscriptionChoice.
-        var expectedResponse = new AudioTranscriptionCompletion(new AudioTranscriptionChoice("hello"));
+        var expectedResponse = new AudioTranscriptionResponse(new AudioTranscriptionChoice("hello"));
         var expectedOptions = new AudioTranscriptionOptions();
         using var cts = new CancellationTokenSource();
 
@@ -29,12 +29,12 @@ public class AudioTranscriptionClientTests
                 // (In a real implementation, the audio data would be processed.)
                 // Here, we simply return an AudioTranscriptionChoice with the text "hello".
                 AudioTranscriptionChoice choice = new("hello");
-                return Task.FromResult(new AudioTranscriptionCompletion(choice));
+                return Task.FromResult(new AudioTranscriptionResponse(choice));
             },
         };
 
         // Act – call the extension method with a valid DataContent.
-        AudioTranscriptionCompletion response = await AudioTranscriptionClientExtensions.TranscribeAsync(
+        AudioTranscriptionResponse response = await AudioTranscriptionClientExtensions.TranscribeAsync(
             client,
             new DataContent("data:,hello"),
             expectedOptions,

@@ -65,7 +65,7 @@ public class AudioTranscriptionClientExtensionsTests
                 Assert.Single(audioContents);
 
                 // For testing, return an async enumerable yielding one streaming update with text "world".
-                return YieldAsync(new StreamingAudioTranscriptionUpdate { Text = "world" });
+                return YieldAsync(new AudioTranscriptionResponseUpdate { Text = "world" });
             },
         };
 
@@ -84,7 +84,7 @@ public class AudioTranscriptionClientExtensionsTests
         Assert.Equal(1, count);
     }
 
-    private static async IAsyncEnumerable<StreamingAudioTranscriptionUpdate> YieldAsync(params StreamingAudioTranscriptionUpdate[] updates)
+    private static async IAsyncEnumerable<AudioTranscriptionResponseUpdate> YieldAsync(params AudioTranscriptionResponseUpdate[] updates)
     {
         await Task.Yield();
         foreach (var update in updates)
